@@ -26,6 +26,17 @@
         - [对队列的操作](#对队列的操作)
         - [用一个数组实现队列](#用一个数组实现队列)
         - [使用队列：方块舞的舞伴分配问题](#使用队列方块舞的舞伴分配问题)
+    - [链表](#链表)
+        - [定义链表](#定义链表)
+        - [设计一个基于对象的链表](#设计一个基于对象的链表)
+            - [`Node`类](#node类)
+            - [LinkedList类](#linkedlist类)
+        - [在链表中删除一个节点](#在链表中删除一个节点)
+        - [双向链表](#双向链表)
+            - [完整的双向链表LList类](#完整的双向链表llist类)
+        - [循环列表](#循环列表)
+        - [链表的其他方法](#链表的其他方法)
+    - [字典](#字典)
 
 <!-- /TOC -->
 
@@ -233,7 +244,7 @@ function hasPrev() {
 优点：
 1. 访问列表元素时不必担心底层的数据存储结构；
 2. 当为列表添加一个元素时，索引的值就不对了，此时只用更新列表，而不用更新迭代器；
-3. 可以用不同类型的数据存储方式实现cList类，迭代器为访问列表里的元素提供了一种统一的方式。
+3. 可以用不同类型的数据存储方式实现`cList`类，迭代器为访问列表里的元素提供了一种统一的方式。
 
 例如:
 
@@ -283,7 +294,7 @@ function Stack() {
 }
 ```
 
-`push()`方法：当向栈中压入一个新元素时，需要将其保存在数组中变量top所对应的位置，然后将top值加一，让其指向数组中下一个空位置。
+`push()`方法：当向栈中压入一个新元素时，需要将其保存在数组中变量`top`所对应的位置，然后将`top`值加一，让其指向数组中下一个空位置。
 
 ```javascript
 function push(element) {
@@ -299,7 +310,7 @@ function pop() {
 }
 ```
 
-`peek()`方法：返回数组的第top-1个位置的元素，即栈顶元素。如果这个栈是空的，则返回`undefined`。
+`peek()`方法：返回数组的第`top-1`个位置的元素，即栈顶元素。如果这个栈是空的，则返回`undefined`。
 
 ```javascript
 function peek() {
@@ -307,7 +318,7 @@ function peek() {
 }
 ```
 
-`length()`方法：通过返回变量top的值，返回栈内元素的个数。
+`length()`方法：通过返回变量`top`的值，返回栈内元素的个数。
 
 ```javascript
 function length() {
@@ -315,7 +326,7 @@ function length() {
 }
 ```
 
-`clear()`方法：将变量top的值设为0，清空栈。
+`clear()`方法：将变量`top`的值设为0，清空栈。
 
 ```javascript
 function clear() {
@@ -356,11 +367,11 @@ function clear() {
 
 #### 1. 数制间的相互转换
 
-假设将数字n转换为以b为基数的数字，实现转换的算法如下：
+假设将数字`n`转换为以`b`为基数的数字，实现转换的算法如下：
 
-1. 最高位为n%b， 将此位压入栈。
-2. 使用n/b代替n。
-3. 重复步骤1和2，直到n等于0，且没有余数。
+1. 最高位为`n%b`， 将此位压入栈。
+2. 使用`n/b`代替`n`。
+3. 重复步骤1和2，直到`n`等于0，且没有余数。
 4. 持续将栈内元素弹出，直到栈空，一次将这些元素排列，就得到转换后的字符串形式。
 
 实现算法如下：
@@ -655,5 +666,350 @@ function dance(males, females) {
     }
 }
 ```
+
+## 链表
+
+js中数组的主要问题是，它们被实现成了对象，与其他语言的数组相比，效率很低。
+
+如果发现数组在实际使用时很慢，可以考虑用链表来替代它。除了对数据的随机访问，俩表几乎可以用在任何可以使用一维数组的情况中。如果需要随机访问，数组仍是最好的选择。
+
+### 定义链表
+
+链表是由一组节点组成的集合，每个节点都使用一个对象的引用指向它的后继，指向另一个节点的引用叫做链。
+
+链表中插入一个节点的效率很高，只需要修改它前面的节点（前驱），使其指向新加入的节点，而新加入的节点则指向原来前驱指向的节点。
+
+从链表中删除一个元素也很简单，将待删除元素的前驱节点指向待删除元素的后继节点，同时将待删除元素指向null，元素就删除成功了。
+
+### 设计一个基于对象的链表
+
+设计的链表包含两个类，Node类用来表示节点，LinkedList类提供了插入节点、删除节点、显示列表元素的方法，以及一些辅助方法。
+
+#### `Node`类
+
+`Node`包含两个属性：`element`用来保存节点上的数据，`next`用来保存下一个节点的链接。
+
+```javascript
+function Node(element) {
+    this.element = element;
+    this.next = null;
+}
+```
+
+#### LinkedList类
+
+链表之后一个属性，那就是使用一个Node对象来保存该链表的头节点。
+
+```javascript
+function LList() {
+    this.head = new Node('head');
+    this.find = find;
+    this.insert = insert;
+    this.remove = remove;
+    this.display = display;
+}
+```
+
+
+`find()`方法：该方法遍历链表，查找给定数据，如果找到数据，该方法返回保存数据的节点。
+
+首先，创建一个新节点，并将链表的头节点赋给这个新创建的节点，然后在链表上进行循环，如果当前节点的`element`属性和我们要找的信息不符，就从当前节点移动到下一节点。如果查找成功，该方法返回包含该数据的节点，否则返回null。
+
+
+```javascript
+function find(item) {
+    var currNode = this.head;
+    while(currNode.element != item) {
+        currNode = currNode.next;
+    }
+    return currNode;
+}
+```
+
+
+`insert()`方法：插入新节点
+
+一旦找到‘后面’的节点，就可以将新节点插入到链表。首先，将新节点的`next`属性设置为‘后面’节点的`next`属性对应的值。然后设置‘后面’节点的`next`属性指向新节点。
+
+```javascript
+function insert(newElement, item) {
+    var newNode = new Node(newElement);
+    var current = this.find(item);
+    newNode.next = current.next();
+    current.next = newNode;
+}
+```
+
+
+`display()`方法：显示链表中的元素
+
+先将列表的头节点赋值给一个变量，然后循环遍历链表，当前节点的`next`属性为`null`时循环结束。为了只显示包含数据的节点，程序只访问当前节点的下一个节点中保存的数据：`currNode.next.element`。
+
+```javascript
+function display() {
+    var currNode = this.head;
+    while(!(currNode.next == null)) {
+        console.log(currNode.next.element);
+        currNode = currNode.next;
+    }
+}
+```
+
+
+LList类和测试程序
+
+```javascript
+function Node(element) {
+    this.element = element;
+    this.next = null;
+}
+function LList() {
+    this.head = new Node('head');
+    this.find = find;
+    this.insert = insert;
+    // this.remove = remove;
+    this.display = display;
+}
+function find(item) {
+    var currNode = this.head;
+    while(currNode.element != item) {
+        currNode = currNode.next;
+    }
+    return currNode;
+}
+function insert(newElement, item) {
+    var newNode = new Node(newElement);
+    var current = this.find(item);
+    newNode.next = current.next;
+    current.next = newNode;
+}
+function display() {
+    var currNode = this.head;
+    while(!(currNode.next == null)) {
+        console.log(currNode.next.element);
+        currNode = currNode.next;
+    }
+}
+// 主程序
+var cities = new LList();
+cities.insert('Conway', 'head');
+cities.insert('Russellville', 'Conway');
+cities.insert('Alma', 'Russellville');
+cities.display();
+```
+
+### 在链表中删除一个节点
+
+从链表中删除节点时，需要先找到待删除节点前面的节点。找到这个节点后，修改它的`next`属性，使其不再指向待删除节点，而是指向带删除节点的下一个节点。
+
+可以定义一个`findPrevious()`来做这件事。该方法遍历链表中的元素，检查每一个节点的下一个节点中是否存储着待删除的数据，如果找到，返回该节点，这样就可以修改他的`next`属性。
+
+```javascript
+function findPrevious(item) {
+    var currNode = this.head;
+    while(!(currNode.element == null) && (currNode.next.element != item)) {
+        currNode = currNode.next;
+    }
+    return currNode;
+}
+```
+
+下面是删除节点的方法：
+
+```javascript
+function remove(item) {
+    var prevNode = this.findPrevious(item);
+    if (!(prevNode == null)) {
+        prevNode.next = prevNode.next.next;
+    }
+}
+```
+
+
+### 双向链表
+
+要为`Node`类增加一个`previous`属性:
+
+```javascript
+function Node(element) {
+    this.element = element;
+    this.next = null;
+    this.previous = null;
+}
+```
+
+双向链表的`insert()`方法和单向链表的类似，但是需要设置新节点的`previous`属性，使其指向该节点的前驱。该方法的定义如下：
+
+```javascript
+function insert(newElement, item) {
+    var newNode = new Node(newElement);
+    var current = this.find(item);
+    newNode.next = current.next;
+    newNode.previous = current;
+    current.next = newNode;
+}
+```
+
+双向链表的`remove()`方法比单向链表的效率更高，因为不需要再查找前驱结点。首先需要在链表中找出存储待删除数据的节点，然后设置该节点前驱的`next`属性，使其指向待删除节点的后继；设置该节点后继的`previou`s属性，使其指向待删除节点的前驱。
+
+```javascript
+function remove(item) {
+    var currNode = this.find(item);
+    if (!(currNode.next == null)) {
+        currNode.previous.next = currNode.next;
+        currNode.next.previous = currNode.previous;
+        currNode.next = null;
+        currNode.previous = null;
+    }
+}
+```
+
+为了完成以反序显示链表中元素这类任务，需要给双向链表添加一个工具的方法，用来查找最后的节点。`findLast()`方法找出了链表中的最后一个节点，同时避免了从前往后遍历链表：
+
+```javascript
+function findLast() {
+    var currNode = this.head;
+    while(!(currNode.next == null)) {
+        currNode = currNode.next;
+    }
+    return currNode;
+}
+```
+
+反向显示双向链表中的元素：
+
+```javascript
+function dispReverse() {
+    var currNode = this.head;
+    currNode = this.findLast();
+    while(!(currNode.previous == null)) {
+        console.log(currNode.element);
+        currNode = currNode.previous;
+    }
+}
+```
+
+#### 完整的双向链表LList类
+
+```javascript
+function Node(element) {
+    this.element = element;
+    this.next = null;
+    this.previous = null;
+}
+function LList() {
+    this.head = new Node('head');
+    this.find = find;
+    this.insert = insert;
+    this.display = display;
+    this.remove = remove;
+    this.findLast = findLast;
+    this.dispReverse = dispReverse;
+}
+function dispReverse() {
+    var currNode = this.head;
+    currNode = this.findLast();
+    while(!(currNode.previous == null)) {
+        console.log(currNode.element);
+        currNode = currNode.previous;
+    }
+}
+function findLast() {
+    var currNode = this.head;
+    while(!(currNode.next == null)) {
+        currNode = currNode.next;
+    }
+    return currNode;
+}
+function remove(item) {
+    var currNode = this.find(item);
+    if(!(currNode.next == null)) {
+        currNode.previous.next = currNode.next;
+        currNode.next.previous = currNode.previous;
+        currNode.next = null;
+        currNode.previous = null;
+    }
+}
+function display() {
+    var currNode = this.head;
+    while(!(currNode.next == null)) {
+        console.log(currNode.next.element);
+        currNode = currNode.next;
+    }
+}
+function find(item) {
+    var currNode = this.head;
+    while(currNode.element != item) {
+        currNode = currNode.next;
+    }
+    return currNode;
+}
+function insert(newElement, item) {
+    var newNode = new Node(newElement);
+    var current = this.find(item);
+    newNode.next = current.next;
+    newNode.previous = current;
+    current.next = newNode;
+}
+
+var cities = new LList();
+cities.insert('Conway', 'head');
+cities.insert('Russellville', 'Conway');
+cities.insert('Carlisle', 'Russellville');
+cities.insert('Alma', 'Carlisle');
+cities.display();
+console.log('');
+cities.remove('Carlisle');
+cities.display();
+console.log('');
+cities.dispReverse();
+```
+
+
+### 循环列表
+
+循环链表和单向链表相似，节点类型都是一样的，唯一的区别是，在创建循环链表时，让其头节点的`next`属性指向它本身：`head.next = head`
+
+如果希望从后向前遍历链表，但是又不想付出额外的代价来创建一个双向链表，那么就可以使用循环链表，从循环链表的尾节点向后移动，就等于从后向前遍历链表。
+
+创建循环链表，只需要修改LList类的构造函数：
+
+```javascript
+function LList() {
+    this.head = new Node('head');
+    this.head.next = this.head;
+    this.find = find;
+    this.insert = insert;
+    this.display = display;
+    this.findPrevious = findPrevious;
+    this.remove = remove;
+}
+```
+
+其他地方也需要做一些改动才可以从单向链表变为循环链表，例如`display()`中需要改动的是循环的条件, 原来的方式会使链表陷入死循环，当循环到头节点时退出循环：
+
+```javascript
+function display() {
+    var currNode = this.head;
+    while(!(currNode.next == null) && !(currNode.next.element == 'head')) {
+        console.log(currNode.next.element);
+        currNode = currNode.next;
+    }
+}
+```
+
+
+### 链表的其他方法
+
+可以通过链表实现以下几个功能：
+
+1. `advance(n)`: 在链表中向前移动n个节点；
+
+2. `back()`: 在双向链表中向后移动几个节点；
+
+3. `show()`: 只显示当前节点。
+
+
+## 字典
 
 未更新完。。。
