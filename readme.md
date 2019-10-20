@@ -17,6 +17,11 @@
         - [使用迭代器访问列表](#使用迭代器访问列表)
     - [栈](#栈)
         - [对栈的操作](#对栈的操作)
+        - [栈的实现](#栈的实现)
+        - [使用Stack类](#使用stack类)
+            - [1. 数制间的相互转换](#1-数制间的相互转换)
+            - [2. 判断是否为回文](#2-判断是否为回文)
+            - [3. 递归演示](#3-递归演示)
 
 <!-- /TOC -->
 
@@ -248,8 +253,248 @@ for (names.end(); names.hasNext();names.prev()) {
 
 栈是一种高效的数据结构，因为数据只能在栈顶添加或删除，所以这样的操作很快，而且容易实现。
 
-栈是一种**先入后出*****LIFO(last-in-first-out)***的数据结构。
+栈是一种**先入后出** *LIFO(last-in-first-out)*的数据结构。
 
 ### 对栈的操作
+
+对栈的两种主要操作：将元素压入栈；将元素弹出栈。
+
+入栈使用`push()`方法，出栈使用`pop()`方法。
+
+`pop()`方法虽然可以访问栈顶的元素，但是调用该方法后，栈顶元素也从栈中被永久的删除了。`peek()`方法则只返回栈顶元素，而不删除它。
+
+`clear()`方法清除栈内所有元素，`length`属性记录栈内元素的个数。
+
+### 栈的实现
+
+```javascript
+function Stack() {
+    this.dataStore = [];  // 保存栈内元素
+    this.top = 0;  // 记录栈顶位置
+    this.push = push;  // 压入栈
+    this.pop = pop;  // 弹出栈
+    this.peek = peek;  // 返回栈顶元素
+    this.length = length;  // 栈内元素的长度
+    this.clear = clear;  // 清空栈
+}
+```
+
+`push()`方法：当向栈中压入一个新元素时，需要将其保存在数组中变量top所对应的位置，然后将top值加一，让其指向数组中下一个空位置。
+
+```javascript
+function push(element) {
+    this.dataStore[this.top++] = element;
+}
+```
+
+`pop()`方法：返回栈顶的元素，同时将变量`top`的值减一。
+
+```javascript
+function pop() {
+    return this.dataStore[--this.top];
+}
+```
+
+`peek()`方法：返回数组的第top-1个位置的元素，即栈顶元素。如果这个栈是空的，则返回`undefined`。
+
+```javascript
+function peek() {
+    return this.dataStore[this.top - 1];
+}
+```
+
+`length()`方法：通过返回变量top的值，返回栈内元素的个数。
+
+```javascript
+function length() {
+    return this.top;
+}
+```
+
+`clear()`方法：将变量top的值设为0，清空栈。
+
+```javascript
+function clear() {
+    this.top = 0;
+}
+```
+
+完整的Stack为：
+
+```javascript
+function Stack() {
+    this.dataStore = [];  // 保存栈内元素
+    this.top = 0;  // 记录栈顶位置
+    this.push = push;  // 压入栈
+    this.pop = pop;  // 弹出栈
+    this.peek = peek;  // 返回栈顶元素
+    this.length = length;  // 栈内元素的长度
+    this.clear = clear;  // 清空栈
+}
+function push(element) {
+    this.dataStore[this.top++] = element;
+}
+function pop() {
+    return this.dataStore[--this.top];
+}
+function peek() {
+    return this.dataStore[this.top - 1];
+}
+function length() {
+    return this.top;
+}
+function clear() {
+    this.top = 0;
+}
+```
+
+### 使用Stack类
+
+#### 1. 数制间的相互转换
+
+假设将数字n转换为以b为基数的数字，实现转换的算法如下：
+
+1. 最高位为n%b， 将此位压入栈。
+2. 使用n/b代替n。
+3. 重复步骤1和2，直到n等于0，且没有余数。
+4. 持续将栈内元素弹出，直到栈空，一次将这些元素排列，就得到转换后的字符串形式。
+
+实现算法如下：
+
+```javascript
+function mulBase(num, base) {
+    var s = new Stack();
+    do {
+        s.push(num % base);
+        num = Math.floor(num /= base);
+    } while(num > 0);
+    var converted = '';
+    while(s.length() > 0) {
+        converted += s.pop()
+    }
+    return converted;
+}
+```
+
+例如：
+
+将二进制转换为十进制；将十进制转换为八进制。
+
+```javascript
+function Stack() {
+    this.dataStore = [];  // 保存栈内元素
+    this.top = 0;  // 记录栈顶位置
+    this.push = push;  // 压入栈
+    this.pop = pop;  // 弹出栈
+    this.peek = peek;  // 返回栈顶元素
+    this.length = length;  // 栈内元素的长度
+    this.clear = clear;  // 清空栈
+}
+function push(element) {
+    this.dataStore[this.top++] = element;
+}
+function pop() {
+    return this.dataStore[--this.top];
+}
+function peek() {
+    return this.dataStore[this.top - 1];
+}
+function length() {
+    return this.top;
+}
+function clear() {
+    this.top = 0;
+}
+function mulBase(num, base) {
+    var s = new Stack();
+    do {
+        s.push(num % base);
+        num = Math.floor(num /= base);
+    } while(num > 0);
+    var converted = '';
+    while(s.length() > 0) {
+        converted += s.pop()
+    }
+    return converted;
+}
+var numBase = 10;
+var num = 32;
+var base = 2;
+var result = mulBase(num, base);
+console.log(`${numBase}进制数${num}转换为${base}进制数为${result}`);
+```
+
+#### 2. 判断是否为回文
+
+```javascript
+function Stack() {
+    this.dataStore = [];  // 保存栈内元素
+    this.top = 0;  // 记录栈顶位置
+    this.push = push;  // 压入栈
+    this.pop = pop;  // 弹出栈
+    this.peek = peek;  // 返回栈顶元素
+    this.length = length;  // 栈内元素的长度
+    this.clear = clear;  // 清空栈
+}
+function push(element) {
+    this.dataStore[this.top++] = element;
+}
+function pop() {
+    return this.dataStore[--this.top];
+}
+function peek() {
+    return this.dataStore[this.top - 1];
+}
+function length() {
+    return this.top;
+}
+function clear() {
+    this.top = 0;
+}
+
+// 主要函数：判断是否为回文
+function isPalindrome(word) {
+    var s = new Stack();
+    for (var i = 0; i < word.length; ++i) {
+        s.push(word[i]);
+    }
+    var rword = '';
+    while(s.length() > 0) {
+        rword += s.pop();
+    }
+    if(word == rword) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+var word = 'arra';
+if(isPalindrome(word)) {
+    console.log(`${word} is a palindrome.`);
+} else {
+    console.log(`${word} is not a palindrome`);
+}
+```
+
+#### 3. 递归演示
+
+阶乘函数
+
+```javascript
+function fact(n) {
+    var s = new Stack();
+    while(n > 1) {
+        s.push(n--);
+    }
+    var product = 1;
+    while(s.length() > 0) {
+        product *= s.pop();
+    }
+    return product;
+}
+
+console.log(fact(5));
+```
 
 未更新完。。。
