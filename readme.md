@@ -22,6 +22,10 @@
             - [1. 数制间的相互转换](#1-数制间的相互转换)
             - [2. 判断是否为回文](#2-判断是否为回文)
             - [3. 递归演示](#3-递归演示)
+    - [队列](#队列)
+        - [对队列的操作](#对队列的操作)
+        - [用一个数组实现队列](#用一个数组实现队列)
+        - [使用队列：方块舞的舞伴分配问题](#使用队列方块舞的舞伴分配问题)
 
 <!-- /TOC -->
 
@@ -495,6 +499,161 @@ function fact(n) {
 }
 
 console.log(fact(5));
+```
+
+
+## 队列
+
+队列是一种列表，队列只能在队尾插入元素，在队首删除元素。
+
+队列是一种**先进先出**的数据结构。队列被用在很多地方：提交操作系统执行的一系列进程、打印任务池等，一些仿真系统用队列来模拟银行或杂货店里排队的顾客。
+
+### 对队列的操作
+
+队列的两种操作时：向队列中插入新元素和删除队列中的元素。插入元素也叫*入队*，删除的操作也叫*出队*。
+
+入队操作在队尾插入新元素，出队操作删除队头的元素。读取队头的元素为`peek()`，该操作返回队头的元素，但不把它从队列中删除。可以使用`length`得知队列中有多少个元素，使用`clear()`方法可以清空队列中的元素。
+
+### 用一个数组实现队列
+
+```javascript
+function Queue() {
+    this.dataStore = [];
+    this.enqueue = enqueue;
+    this.dequeue = dequeue;
+    this.front = front;
+    this.back = back;
+    this.toString = toString;
+    this.empty = empty;
+}
+```
+
+`enqueue()`方法：向队尾添加一个元素
+
+```javascript
+function enqueue(element) {
+    this.dataStore.push(element);
+}
+```
+
+`dequeue()`方法：删除队首元素 
+
+```javascript
+function dequeue() {
+    return this.dataStore.shift();
+}
+```
+
+`front()`方法：读取队首元素
+
+```javascript
+function front() {
+    return this.dataStore[0];
+}
+```
+
+`back()`方法：读取队尾元素
+
+```javascript
+function back() {
+    return this.dataStore[this.dataStore.length - 1];
+}
+```
+
+`toString()`方法：显示队列内的所有元素
+
+```javascript
+function toString() {
+    var retStr = '';
+    for(var i = 0; i < this.dataStore.length; ++i) {
+        retStr += this.dataStore[i] + '\n';
+    }
+    return retStr;
+}
+```
+
+`empty()`方法：判断队列是否为空
+
+```javascript
+function empty() {
+    if(this.dataStore.length == 0) {
+        return true;
+    } else {
+        return false;
+    }
+}
+```
+
+### 使用队列：方块舞的舞伴分配问题
+
+题意描述：当男男女女来到舞池，他们按照自己的性别排成两队。当舞池中有地方空出来时，选两个队列中的第一人组成舞伴，他们身后的人要各自向移动一步，变成新的队首。当一对舞伴迈入舞池时，主持人会大声喊出他们的名字。当一对舞伴走出舞池，且两排队伍中有任意一队没有人时，支持人也会把这个情况告诉大家。
+
+```javascript
+function Queue() {
+    this.dataStore = [];
+    this.enqueue = enqueue;
+    this.dequeue = dequeue;
+    this.front = front;
+    this.back = back;
+    this.toString = toString;
+    this.empty = empty;
+}
+function enqueue(element) {
+    this.dataStore.push(element);
+}
+function dequeue() {
+    return this.dataStore.shift();
+}
+function front() {
+    return this.dataStore[0];
+}
+function back() {
+    return this.dataStore[this.dataStore.length - 1];
+}
+function toString() {
+    var retStr = '';
+    for(var i = 0; i < this.dataStore.length; ++i) {
+        retStr += this.dataStore[i] + '\n';
+    }
+    return retStr;
+}
+function empty() {
+    if(this.dataStore.length == 0) {
+        return true;
+    } else {
+        return false;
+    }
+}
+function Dancer(name, sex) {
+    this.name = name;
+    this.sex = sex;
+}
+function getDancers(males,females) {
+    var names = read('dancers.txt').split('\n');  // 读取‘dancers.txt’内的人员名单
+    for(var i = 0; i < names.length; ++i) {
+        names[i] = names[i].trim();
+    }
+    for(var i = 0; i < names.length; ++i) {
+        var dancer = names[i].split('');
+        var sex = dancer[0];
+        var name = dancer[1];
+        if (sex == 'F') {
+            femaleDancers.enqueue(new Dancer(name, sex));
+        } else {
+            maleDancers.enqueue(new Dancer(name, sex));
+        }
+    }
+}
+
+function dance(males, females) {
+    console.log('The dance parents are: ');
+    while(!females.empty() && !males.empty()) {
+        person = females.dequeue();
+        console.log('female dancer is ' + person.name);
+        person = males.dequeue();
+        console.log('and the male dancer is ' + person.name);
+    }
+}
 ```
 
 未更新完。。。
