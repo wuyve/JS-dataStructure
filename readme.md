@@ -37,6 +37,10 @@
         - [循环列表](#循环列表)
         - [链表的其他方法](#链表的其他方法)
     - [字典](#字典)
+        - [Dictionary类](#dictionary类)
+        - [Dictionary类的复制方法](#dictionary类的复制方法)
+    - [散列](#散列)
+        - [HashTable类](#hashtable类)
 
 <!-- /TOC -->
 
@@ -1011,5 +1015,97 @@ function display() {
 
 
 ## 字典
+
+字典是一种以键-值队形式存储数据的数据结构。Javascript中的Object就是以字典的形式设计的。
+
+### Dictionary类
+
+Dictionary类的基础是Array类，而不是Object类。
+
+定义Dictionary类
+
+```javascript
+function Dictionary() {
+    this.add = add;
+    this.datastore = new Array();
+    this.find = find;
+    this.remove = remove;
+    this.showAll = showAll;
+}
+function add(key, value) {
+    this.datastore[key] = value;
+}
+function find(key) {
+    return this.datastore[key];
+}
+function remove(key) {
+    delete this.datastore[key];
+}
+function showAll() {
+    var datakeys = Array.prototype.slice.call(Object.keys(this.datastore));
+    for(var key in datakeys) {
+        console.log(datakeys[key] + ' ->' + this.datastore[datakeys[key]]);
+    }
+}
+```
+
+使用Dictionary:
+
+```javascript
+var pbook = new Dictionary();
+pbook.add('Mike', '123');
+pbook.add('David', '456');
+pbook.add('Cynthia', '789');
+pbook.add('apple', '235');
+console.log("David's extension: " + pbook.find('David'));
+pbook.remove('David');
+pbook.showAll();
+```
+
+### Dictionary类的复制方法
+
+返回会字典中的元素个数：
+
+```javascript
+function count() {
+    var n = 0;
+    for each(var key in Object.keys(this.datastore)) {
+        ++n;
+    }
+    return n;
+}
+```
+
+清除字典：
+
+```javascript
+function clear() {
+    for each(var key in Object) {
+        delete this.datastore[key];
+    }
+}
+```
+
+对字典进行排序：
+
+```javascript
+function showAll() {
+    for(var key in Object.keys(this.datastore).sort()) {
+        console.log(key + ' ->' + this.datastore[key]);
+    }
+}
+```
+
+
+## 散列
+
+散列是一种常用的数据存储技术，散列后的数据可以快速的插入或取用。散列使用的数据结构叫做散列表。在散列表上杀入、删除和取用数据都非常快，但是对于查找操作来说效率比较低。
+
+散列表是基于数组进行设计的的。数组的长度是预先设定的，如有需要，可以随时增加。所有元素根据和该元素对应的键，保存在数组的特定位置。使用散列表存储数据时，通过一个散列函数将键映射为一个数字，这个数字的范围是0到散列列表的长度。
+
+理想情况下，散列函数会将每个键值映射为一个唯一的数组索引。如果存在两个键映射为一个值，这种现象称为**碰撞**。
+
+### HashTable类
+
 
 未更新完。。。
