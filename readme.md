@@ -41,6 +41,8 @@
         - [Dictionary类的复制方法](#dictionary类的复制方法)
     - [散列](#散列)
         - [HashTable类](#hashtable类)
+        - [选择一个散列函数](#选择一个散列函数)
+        - [一个更好的散列函数](#一个更好的散列函数)
 
 <!-- /TOC -->
 
@@ -1107,5 +1109,102 @@ function showAll() {
 
 ### HashTable类
 
+HashTable 类的构造函数定义如下：
+
+```javascript
+function HashTable() {
+    this.table = new Array(137);
+    this.simpleHash = simpleHash;
+    this.showDistro = showDistro;
+    this.put = put;
+}
+```
+
+### 选择一个散列函数
+
+散列函数的选择依赖于键值的数据类型。如果键是整型，最简单的散列函数就是以数组的长度对键取余。在一些情况下，比如数组的长度是10，而键值都是10的倍数的时候，就不推荐使用这种方式。这也是数组的长度是质数的原因。如果键是随机的整数，则散列函数应该更均匀地分布这些键。这种散列方式称为**除留余数法**
+
+完整的HashTable类定义如下：
+
+```javascript
+function HashTable() {
+    this.table = new Array(137);
+    this.simpleHash = simpleHash;
+    this.showDistro = showDistro;
+    this.put = put;
+}
+function simpleHash(data) {
+    var total = 0;
+    for (var i = 0; i < data.length; ++i) {
+        total += data.charCodeAt(i);
+    }
+    return total % this.table.length;
+}
+function put(data) {
+    var pos = this.simpleHash(data);
+    this.table[pos] = data;
+}
+function showDistro() {
+    var n = 0;
+    for (var i = 0; i < this.table.length; ++i) {
+        if (this.table[i] != undefined) {
+            console.log(i + ': ' + this.table[i]);
+        }
+    }
+}
+```
+
+例子：
+
+```javascript
+function HashTable() {
+    this.table = new Array(137);
+    this.simpleHash = simpleHash;
+    this.showDistro = showDistro;
+    this.put = put;
+}
+function simpleHash(data) {
+    var total = 0;
+    for (var i = 0; i < data.length; ++i) {
+        total += data.charCodeAt(i);
+    }
+    return total % this.table.length;
+}
+function put(data) {
+    var pos = this.simpleHash(data);
+    this.table[pos] = data;
+}
+function showDistro() {
+    var n = 0;
+    for (var i = 0; i < this.table.length; ++i) {
+        if (this.table[i] != undefined) {
+            console.log(i + ': ' + this.table[i]);
+        }
+    }
+}
+var arr = ['David', 'Jennifer', 'Donnie', 'Raymond', 'Cynthia', 'Mike', 'Clayton', 'Danny', 'Jonathan'];
+var hTable = new HashTable();
+for (var i = 0; i < arr.length; ++i) {
+    hTable.put(arr[i]);
+}
+hTable.showDistro();
+```
+
+程序输出为：
+
+35: Cynthia
+45: Clayton
+57: Donnie
+77: David
+95: Danny
+116: Mike
+132: Jennifer
+134: Jonatha
+
+其中没有`Raymond`，只因为散列函数发生了碰撞，通过在`simpleHash`函数中添加一句`console.log('Hash value: ' + data + ' -> ' + total);`语句，可以发现`Raymond`和`Clayton`的散列值是一样的，都为730，因为碰撞，只有`Clayton`存入了散列表。可以通过改善散列函数来避免发生碰撞。
+
+### 一个更好的散列函数
+
+为了避免碰撞，首先要确保散列表中用来存储数据的数组其大小是个质数。
 
 未更新完。。。
