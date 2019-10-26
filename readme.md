@@ -43,6 +43,8 @@
         - [HashTable类](#hashtable类)
         - [选择一个散列函数](#选择一个散列函数)
         - [一个更好的散列函数](#一个更好的散列函数)
+        - [散列化整型键](#散列化整型键)
+        - [对散列表排序、从散列表中取值](#对散列表排序从散列表中取值)
 
 <!-- /TOC -->
 
@@ -1205,6 +1207,106 @@ hTable.showDistro();
 
 ### 一个更好的散列函数
 
-为了避免碰撞，首先要确保散列表中用来存储数据的数组其大小是个质数。
+为了避免碰撞，首先要确保散列表中用来存储数据的数组其大小是个质数。数组的长度应该是100以上，这是为了让数据在散列表中分布的更加均匀。
+
+为了避免碰撞，在给散列表一个合适的大小之后，接下来要有一个计算散列的更好的办法：霍纳算法。在此算法中，新的散列函数仍先计算字符串中各字符的ASCII码，不过求和时每次要乘以一个质数。
+
+使用霍纳算法的散列函数：
+
+```javascript
+function betterHash(str) {
+    const H = 37;
+    var total = 0;
+    for (var i = 0; i < str.length; ++i) {
+        total += H * total + str.charCodeAt(i);
+    }
+    total = total % this.table.length;
+    if (total < 0) {
+        total += this.table.length - 1;
+    }
+    return parseInt(total);
+}
+```
+
+然后将 `put()`方法中的`simpleHash`替换为`betterHash`.
+
+这次所有的任命都显示出来了，没有碰撞。
+
+### 散列化整型键
+
+例如：使用前面定义的 函数存储一组学生和他们的成绩信息。
+
+```javascript
+function HashTable() {
+    this.table = new Array(137);
+    this.simpleHash = simpleHash;
+    this.betterHash = betterHash;
+    this.showDistro = showDistro;
+    this.put = put;
+}
+function simpleHash(data) {
+    var total = 0;
+    for (var i = 0; i < data.length; ++i) {
+        total += data.charCodeAt(i);
+    }
+    return total % this.table.length;
+}
+function betterHash(str) {
+    const H = 37;
+    var total = 0;
+    for (var i = 0; i < str.length; ++i) {
+        total += H * total + str.charCodeAt(i);
+    }
+    total = total % this.table.length;
+    if (total < 0) {
+        total += this.table.length - 1;
+    }
+    return parseInt(total);
+}
+function put(data) {
+    var pos = this.betterHash(data);
+    this.table[pos] = data;
+}
+function showDistro() {
+    var n = 0;
+    for (var i = 0; i < this.table.length; ++i) {
+        if (this.table[i] != undefined) {
+            console.log(i + ': ' + this.table[i]);
+        }
+    }
+}
+function getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+function genStuData(arr) {
+    for (var i = 0; i < arr.length; ++i) {
+        var num = '';
+        for (var j = 1; j <= 9; ++j) {
+            num += Math.floor(Math.random() * 10);
+        }
+        num += getRandomInt(50, 100);
+        arr[i] = num;
+    }
+}
+var numStudents = 10;
+var arrSize = 97;
+var idLen = 9;
+var students = new Array(numStudents);
+genStuData(students);
+console.log('Student Data: ');
+for (var i = 0; i < students.length; ++i) {
+    console.log(students[i].substring(0, 8) + ' ' + students[i].substring(9));
+}
+console.log('');
+console.log('Data distribution: ');
+var hTable = new HashTable();
+for (var i = 0; i < students.length; ++i) {
+    hTable.put(students[i]);
+}
+hTable.showDistro();
+```
+
+### 对散列表排序、从散列表中取值
+
 
 未更新完。。。
