@@ -24,9 +24,12 @@ function betterHash(str) {
     }
     return parseInt(total);
 }
-function put(data) {
-    var pos = this.betterHash(data);
+function put(key, data) {
+    var pos = this.betterHash(key);
     this.table[pos] = data;
+}
+function get(value) {
+    return this.table[this.betterHash(key)];
 }
 function showDistro() {
     var n = 0;
@@ -49,19 +52,22 @@ function genStuData(arr) {
         arr[i] = num;
     }
 }
-var numStudents = 10;
-var arrSize = 97;
-var idLen = 9;
-var students = new Array(numStudents);
-genStuData(students);
-console.log('Student Data: ');
-for (var i = 0; i < students.length; ++i) {
-    console.log(students[i].substring(0, 8) + ' ' + students[i].substring(9));
+var pnumbers = new HashTable();
+var name, number;
+for(var i = 0; i < 3; i++) {
+    console.log('Enter a name (space to quit): ');
+    name = readline();
+    putstr = ('enter a number: ');
+    number = readline();
+    pnumbers.put(name, number);
 }
-console.log('');
-console.log('Data distribution: ');
-var hTable = new HashTable();
-for (var i = 0; i < students.length; ++i) {
-    hTable.put(students[i]);
+name = '';
+putstr = ('Name for number (Enter quit to stop): ');
+while(name != 'quit') {
+    name = readline();
+    if (name == 'quit') {
+        break;
+    }
+    console.log(name + "'s number is " + pnumbers.get(name));
+    putstr("Name for number (Enter quit to stop):")
 }
-hTable.showDistro();

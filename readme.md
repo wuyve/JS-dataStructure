@@ -45,6 +45,10 @@
         - [一个更好的散列函数](#一个更好的散列函数)
         - [散列化整型键](#散列化整型键)
         - [对散列表排序、从散列表中取值](#对散列表排序从散列表中取值)
+        - [碰撞处理](#碰撞处理)
+            - [开链法](#开链法)
+            - [线性探测法](#线性探测法)
+    - [集合](#集合)
 
 <!-- /TOC -->
 
@@ -1308,5 +1312,211 @@ hTable.showDistro();
 
 ### 对散列表排序、从散列表中取值
 
+修改`put()`和`get()`方法：使得可以同时接受键和数据作为参数，对键值散列后，将数据存储到散列中；读取存储在散列表中的数据。
+
+```javascript
+function put(key, data) {
+    var pos = this.betterHash(key);
+    this.table[pos] = data;
+}
+function get(value) {
+    return this.table[this.betterHash(key)];
+}
+```
+
+例子： 提示用户输入三个人名和 电话号码，然后根据人名获取其电话号码，键入`quit`程序退出
+
+```javascript
+function HashTable() {
+    this.table = new Array(137);
+    this.simpleHash = simpleHash;
+    this.betterHash = betterHash;
+    this.showDistro = showDistro;
+    this.put = put;
+}
+function simpleHash(data) {
+    var total = 0;
+    for (var i = 0; i < data.length; ++i) {
+        total += data.charCodeAt(i);
+    }
+    return total % this.table.length;
+}
+function betterHash(str) {
+    const H = 37;
+    var total = 0;
+    for (var i = 0; i < str.length; ++i) {
+        total += H * total + str.charCodeAt(i);
+    }
+    total = total % this.table.length;
+    if (total < 0) {
+        total += this.table.length - 1;
+    }
+    return parseInt(total);
+}
+function put(key, data) {
+    var pos = this.betterHash(key);
+    this.table[pos] = data;
+}
+function get(value) {
+    return this.table[this.betterHash(key)];
+}
+function showDistro() {
+    var n = 0;
+    for (var i = 0; i < this.table.length; ++i) {
+        if (this.table[i] != undefined) {
+            console.log(i + ': ' + this.table[i]);
+        }
+    }
+}
+function getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+function genStuData(arr) {
+    for (var i = 0; i < arr.length; ++i) {
+        var num = '';
+        for (var j = 1; j <= 9; ++j) {
+            num += Math.floor(Math.random() * 10);
+        }
+        num += getRandomInt(50, 100);
+        arr[i] = num;
+    }
+}
+var pnumbers = new HashTable();
+var name, number;
+for(var i = 0; i < 3; i++) {
+    console.log('Enter a name (space to quit): ');
+    name = readline();
+    putstr = ('enter a number: ');
+    number = readline();
+    pnumbers.put(name, number);
+}
+name = '';
+putstr = ('Name for number (Enter quit to stop): ');
+while(name != 'quit') {
+    name = readline();
+    if (name == 'quit') {
+        break;
+    }
+    console.log(name + "'s number is " + pnumbers.get(name));
+    putstr("Name for number (Enter quit to stop): ");
+}
+```
+
+### 碰撞处理
+
+碰撞处理的方法有两种：开链法 和 线性探测法。
+
+#### 开链法
+
+当碰撞发生时，我们仍然希望将键存在通过散列算法产生索引的位置上，但实际上，不可能将多份数据存储到一个数组单元中。开链法是指实现散列表的底层数组中，每个数组元素又是一个新的数据结构。
+
+实现开链法的方法是：在创建存储散列过的键值的数组时，通过调用一个函数创建一个空数组时，通过调用一个函数创建一个空的数组，然后将该数组赋值给散列表里的每个数组元素。这样就创建了一个二维数组。
+
+下面代码定义了一个函数`buildChains()`，用来创建第二组数组，也称 这个数组为链。
+
+```javascript
+function buildChains() {
+    for (var i = 0; i < this.table.length; ++i) {
+        this.table[i] = new Array();
+    }
+}
+```
+
+需要对`showDistro()`方法做如下修改：
+
+```javascript
+function showDistro() {
+    var n = 0;
+    for (var i = 0; i < this.table.length; ++i) {
+        if (this.table[i][0] != undefined) {
+            console.log(i + ": " + this.table[i]);
+        }
+    }
+}
+```
+
+重新定义`put()`方法和`get()`方法。`put()`方法将键值散列，散列后的值对应数组中的一个位置，先尝试将数据放到该位置上的数组中的第一个单元格，如果该单元格里已经有数据了，`put()`方法会搜索下一个位置，直到找到能放置数据的单元格，并把数据存储进去。实现`put()`方法的代码如下：
+
+```javascript
+function put(key, data) {
+    var pos = this.betterHash(key);
+    var index = 0;
+    if (this.table[pos][index] == undefined) {
+        this.table[pos][index] = data;
+        ++index;
+    } else {
+        while(this.table[pos][index] != undefined) {
+            ++index;
+        }
+        this.table[pos][index + 1] = data;
+    }
+}
+```
+
+`get()`方法先对键值散列，根据散列后的值找到散列表中相应的位置，然后搜索该位置上的链，直到找到键值。如果找到，就将紧跟在键值后面的数据返回；如果没找到，就返回undefined。代码如下：
+
+```javascript
+function get(key) {
+    var index = 0;
+    var hash = this.betterHash(key);
+    if (this.table[pos][index] == key) {
+        return this.table[pos][index + 1];
+        index += 2;
+    } else {
+        while(this.table[pos][index] != key) {
+            index += 2;
+        }
+        return this.table[pos][index + 1];
+    }
+    return undefined;
+}
+```
+
+#### 线性探测法
+
+线性探测法隶属于一种更一般化的散列技术：开放寻址数列。当发生碰撞时，线性探测法检查散列表中的下一个位置是否为空。如果为空，就将数据存入该位置；如果不为空，则继续检查下一个位置，直到找到一个空的位置为止。该技术是基于这样一个事实：每个散列表都会有很多单元格，可以使用他们来存储数据。
+
+当存储数据使用的数组特别大，选择线性探测法要比开链法好。如果数组的大小是待存储数据个数的1.5倍，则使用开链法；如果数组的大小 是待存储数据的两倍及两倍以上时，那么使用线性探测法。
+
+为了实现一个真实的数据存储系统，需要为HashTable类增加一个新的数组，用来存储数据。数组table和values并行工作，当将一个简直保存到数组table中时，将数据存入数组values中相应的位置上。
+
+在HashTable的构造函数中加入下面一行代码：`this.values = []`.
+
+在`put()`方法中使用线性探测技术：
+
+```javascript
+function put(key, data) {
+    var pos = this.betterHash(key);
+    if (this.table[pos] == undefined) {
+        this.table[pos] = key;
+        this.values[pos] = data;
+    } else {
+        while(this.table[pos] != undefined) {
+            pos++;
+        }
+        this.table[pos] = key;
+        this.values[pos] = data;
+    }
+}
+```
+
+`get()`方法先搜索键在散列表中的位置，如果找到，则返回数组values中对应位置上的数据；如果没有找到，则循环搜索，直到找到对应的键或者数组中的单元为undefined时，后者表示改键没有被存入散列表。代码如下：
+
+```javascript
+function get(key) {
+    var hash = -1;
+    hash = this.betterHash(key);
+    if (hash > -1) {
+        for (var i = hash; this.table[hash] != undefined; i++) {
+            if (this.table[hash] == key) {
+                return this.values[hash];
+            }
+        }
+    }
+    return undefined;
+}
+```
+
+## 集合
 
 未更新完。。。
