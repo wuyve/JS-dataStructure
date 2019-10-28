@@ -49,6 +49,11 @@
             - [开链法](#开链法)
             - [线性探测法](#线性探测法)
     - [集合](#集合)
+        - [集合的定义、操作和属性](#集合的定义操作和属性)
+            - [集合的定义](#集合的定义)
+            - [对集合操作](#对集合操作)
+        - [Set类的实现](#set类的实现)
+    - [二叉树和二叉查找树](#二叉树和二叉查找树)
 
 <!-- /TOC -->
 
@@ -1518,5 +1523,160 @@ function get(key) {
 ```
 
 ## 集合
+
+集合是一种包含不同元素的数据结构。集合中的元素称为成员，集合有两个最重要的特性：集合中的成员是无序的；集合中没有相同的成员。
+
+### 集合的定义、操作和属性
+
+集合是一组无序但彼此之间又有一定相关性的成员构成，每个成员在集合中只能出现一次。
+
+#### 集合的定义
+
+1. 不把韩任何成员的集合称为空集，全集则是包含一切可能成员的集合。
+2. 如果两个集合的成员完全相同，则称两个集合相等。
+3. 如果一个集合中所有成员都属于另一个集合，则前一集合称为后一集合的子集。
+
+#### 对集合操作
+
+对集合的操作有下面几种：
+
+1. 并集： 讲两个集合的成员进行合并，得到一个新集合。
+2. 交集： 两个集合中共同存在的成员组成一个新的集合。
+3. 补集： 属于一个集合而不属于另一个集合的成员组成的集合。
+
+### Set类的实现
+
+Set类的实现基于数组，数组用来存储数据。
+
+```javascript
+function Set() {
+    this.dataStore = [];
+    this.add = add;
+    this.remove = remove;
+    this.size = size;
+    this.union = union;
+    this.intersect = intersect;
+    this.subset = subset;
+    this.difference = difference;
+    this.show = show;
+}
+```
+
+
+将数据存入数组，先使用`indexOf`检查新加入的元素在数组中是否存在，如果找到，则返回该元素所在的数组中的位置，否则返回-1.
+
+如果数组中还未包含该元素，`add()`方法会将新加元素保存到数组中并返回true，否则返回false
+
+```javascript
+function add(data) {
+    if (this.dataStore.indexOf(data) < 0) {
+        this.dataStore.push(data);
+        return true;
+    } else {
+        return false;
+    }
+}
+```
+
+
+`remove()`方法：首先检查待删除元素是否存在在数组中，如果在，则使用数组的`splice()`方法删除该元素并返回true，否则返回false，表示这个几何中并不存在这个元素。
+
+```javascript
+function remove(data) {
+    var pos = this.dataStore.indexOf(data);
+    if (pos > -1) {
+        this.dataStore.splice(pos, 1);
+        return true;
+    } else {
+        return false;
+    }
+}
+```
+
+
+`show()`方法：显示结合中的成员。
+
+```javascript
+function show() {
+    return this.dataStore;
+}
+```
+
+
+`contains()`方法：检查一个成员是否属于该集合。
+
+```javascript
+function contains(data) {
+    if(this.dataStore.indexOf(data) > -1) {
+        return true;
+    } else {
+        return false;
+    }
+}
+```
+
+
+`union()`方法执行并集操作，将两个集合合并成一个。该方法首先将第一个集合里的成员悉数加入一个临时集合，然后检查第二个集合 中的成员，看它们是否也同时属于第一个集合。如果属于，则跳过该成员，否则就将该成员加入临时集合。
+
+```javascript
+function union(set) {
+    var tempSet = new Set();
+    for(var i = 0; i < set.dataStore.length; ++i) {
+        tempSet.add(this.dataStore[i]);
+    }
+    for(var i = 0; i < set.dataStore.length; ++i) {
+        if(!tempSet.contains(set.dataStore[i])) {
+            tempSet.dataStore.push(set.dataStore[i]);
+        }
+    }
+    return tempSet;
+}
+```
+
+
+`size()`方法：对比两个集合的大小
+
+```javascript
+function size() {
+    return this.dataStore.length;
+}
+```
+
+
+`subset()`方法执行交集操作，首先要确定该集合的长度是否小于待比较集合，如果该集合比特定比较集合还要大，那么该集合肯定不会是待比较集合的一个子集；当该集合的长度小于待比较集合时，再判断该集合内的成员是否都属于待比较集合。如果有任意一个成员不属于待比较集合，则返回false，程序终止。如果一直比较完该集合的最后一个元素，所有元素都属于待比较集合，那么该集合就是待比较集合的一个子集，该方法返回true。
+
+```javascript
+function subset(set) {
+    if(this.size() > set.size()) {
+        return false;
+    } else {
+        forEach(var member in this.dataStore) {
+            if(!set.contains(member)) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+```
+
+
+`difference()`方法：返回一个新集合，该集合包含的是那些属于第一个集合但不属于第二个集合的成员。
+
+```javascript
+function difference(set) {
+    var tempSet = new Set();
+    for(var i = 0; i < this.dataStore.length; ++i) {
+        if(!set.contains(this.dataStore[i])) {
+            tempSet.add(this.dataStore[i]);
+        }
+    }
+    return tempSet;
+}
+```
+
+
+## 二叉树和二叉查找树
+
 
 未更新完。。。
