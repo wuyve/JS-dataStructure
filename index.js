@@ -10,6 +10,8 @@ function show () {
 function BST () {
     this.root = null;
     this.insert = insert;
+    this.getMin = getMin;
+    this.getMax = getMax;
     // this.inOrder = inOther;
 }
 function insert (data) {
@@ -37,12 +39,39 @@ function insert (data) {
         }
     }
 }
-function inOrder(node) {
+function postOrder(node) {
     if(!(node == null)) {
-        inOrder(node.left);
+        postOrder(node.left);
+        postOrder(node.right);
         console.log(node.show() + ' ');
-        inOrder(node.right);
     }
+}
+function getMin() {
+    var current = this.root;
+    while(!(current.left == null)) {
+        current = current.left;
+    }
+    return current.data;
+}
+function getMax() {
+    var current = this.root;
+    while(!(current.right == null)) {
+        current = current.right;
+    }
+    return current.data;
+}
+function find(data) {
+    var current = this.root;
+    while(current != null) {
+        if(current.data == data) {
+            return current;
+        } else if(data < current.data) {
+            current = current.left;
+        } else {
+            current = current.right;
+        }
+    }
+    return null;
 }
 var nums = new BST();
 nums.insert(23);
@@ -52,4 +81,7 @@ nums.insert(37);
 nums.insert(3);
 nums.insert(99);
 nums.insert(22);
-inOrder(nums.root);
+var min = nums.getMin();
+console.log('the min is: ' + min);
+var max = nums.getMax();
+console.log('the max is: ' + max);

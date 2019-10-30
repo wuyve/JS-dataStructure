@@ -1863,4 +1863,8 @@ inOrder(nums.root);
 
 ##### 先序遍历
 
+先序遍历的定义如下：
+
+```javascript
+
 未更新完。。。
