@@ -60,6 +60,11 @@
             - [遍列二叉查找树](#遍列二叉查找树)
                 - [中序遍历](#中序遍历)
                 - [先序遍历](#先序遍历)
+                - [后序遍历](#后序遍历)
+        - [在二叉查找树上进行查找](#在二叉查找树上进行查找)
+            - [查找最小值和最大值](#查找最小值和最大值)
+            - [查找给定值](#查找给定值)
+        - [从二叉树上删除节点](#从二叉树上删除节点)
 
 <!-- /TOC -->
 
@@ -1866,5 +1871,264 @@ inOrder(nums.root);
 先序遍历的定义如下：
 
 ```javascript
+function Node (data, left, right) {
+    this.data = data;
+    this.left = left;
+    this.right = right;
+    this.show = show;
+}
+function show () {
+    return this.data;
+}
+function BST () {
+    this.root = null;
+    this.insert = insert;
+    // this.inOrder = inOther;
+}
+function insert (data) {
+    var n = new Node(data, null, null);
+    if (this.root === null) {
+        this.root = n;
+    } else {
+        var current = this.root;
+        var parent;
+        while (true) {
+            parent = current;
+            if (data < current.data) {
+                current = current.left;
+                if (current == null) {
+                    parent.left = n;
+                    break;
+                }
+            } else {
+                current = current.right;
+                if (current == null) {
+                    parent.right = n;
+                    break;
+                }
+            }
+        }
+    }
+}
+function preOrder(node) {
+    if(!(node == null)) {
+        console.log(node.show() + ' ');
+        preOrder(node.left);
+        preOrder(node.right);
+    }
+}
+var nums = new BST();
+nums.insert(23);
+nums.insert(45);
+nums.insert(16);
+nums.insert(37);
+nums.insert(3);
+nums.insert(99);
+nums.insert(22);
+preOrder(nums.root);
+```
+
+测试结果：
+
+>23
+
+>16
+
+>3
+
+>22
+
+>45
+
+>37
+
+>99
+
+##### 后序遍历
+
+后序遍历的定义：
+
+```javascript
+function postOrder(node) {
+    if(!(node == null)) {
+        postOrder(node.left);
+        postOrder(node.right);
+        console.log(node.show() + ' ');
+    }
+}
+```
+
+测试例子：
+
+```javascript
+function Node (data, left, right) {
+    this.data = data;
+    this.left = left;
+    this.right = right;
+    this.show = show;
+}
+function show () {
+    return this.data;
+}
+function BST () {
+    this.root = null;
+    this.insert = insert;
+    // this.inOrder = inOther;
+}
+function insert (data) {
+    var n = new Node(data, null, null);
+    if (this.root === null) {
+        this.root = n;
+    } else {
+        var current = this.root;
+        var parent;
+        while (true) {
+            parent = current;
+            if (data < current.data) {
+                current = current.left;
+                if (current == null) {
+                    parent.left = n;
+                    break;
+                }
+            } else {
+                current = current.right;
+                if (current == null) {
+                    parent.right = n;
+                    break;
+                }
+            }
+        }
+    }
+}
+function postOrder(node) {
+    if(!(node == null)) {
+        postOrder(node.left);
+        postOrder(node.right);
+        console.log(node.show() + ' ');
+    }
+}
+var nums = new BST();
+nums.insert(23);
+nums.insert(45);
+nums.insert(16);
+nums.insert(37);
+nums.insert(3);
+nums.insert(99);
+nums.insert(22);
+postOrder(nums.root);
+```
+
+测试结果：
+
+>3
+
+>22
+
+>16
+
+>37
+
+>99
+
+>45
+
+>23
+
+
+### 在二叉查找树上进行查找
+
+对BST通常有下列三种类型的值：
+
+1. 查找给定值
+2. 查找最小值
+3. 查找最大值
+
+#### 查找最小值和最大值
+
+因为较小的值总是在左节点上，在BST上查找最小值，只需要遍历左子树，直到找到最后一个节点。
+
+查找最小值的方法定义如下：
+
+```javascript
+function getMin() {
+    var current = this.root;
+    while(!(current.left == null)) {
+        current = current.left;
+    }
+    return current.data;
+}
+```
+
+在BST上查找最大值，只需要遍历右子树，直到找到最后一个节点，该节点上保存的值为最大值。
+
+该方法定义如下：
+
+```javascrpt
+function getMax() {
+    var current = this.root;
+    while(!(current.right == null)) {
+        current = current.right;
+    }
+    return current.right;
+}
+```
+
+测试getMin方法和getMax方法：
+
+```javascript
+var nums = new BST();
+nums.insert(23);
+nums.insert(45);
+nums.insert(16);
+nums.insert(37);
+nums.insert(3);
+nums.insert(99);
+nums.insert(22);
+var min = nums.getMin();
+console.log('the min is: ' + min);
+var max = nums.getMax();
+console.log('the max is: ' + max);
+```
+
+测试结果：
+
+>the min is: 3
+
+>the max is: 99
+
+
+#### 查找给定值
+
+在BST上查找给定值，需要比较该值和当前节点上的值的大小。通过比较，就能确定如果给定值不在当前结点时，是向左遍历还是向右遍历。
+
+该方法定义为：
+
+```javascript
+function getMax() {
+    var current = this.root;
+    while(!(current.right == null)) {
+        current = current.right;
+    }
+    return current.data;
+}
+function find(data) {
+    var current = this.root;
+    while(current != null) {
+        if(current.data == data) {
+            return current;
+        } else if(data < current.data) {
+            current = current.left;
+        } else {
+            current = current.right;
+        }
+    }
+    return null;
+}
+```
+
+### 从二叉树上删除节点
+
+从BST中删除节点的第一步是判断当前结点是否包含带删除数据，如果包含，则删除该节点；如果不包含，则比较当前节点上的数据和待删除节点的数据：如果待删除数据小于当前节点的数据，则移至当前节点的左节点进行比较；如果删除数据大于当前节点的数据，则移至当前节点的右结点进行比较。
+
 
 未更新完。。。
