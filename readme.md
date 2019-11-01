@@ -65,6 +65,7 @@
             - [查找最小值和最大值](#查找最小值和最大值)
             - [查找给定值](#查找给定值)
         - [从二叉树上删除节点](#从二叉树上删除节点)
+        - [计数](#计数)
 
 <!-- /TOC -->
 
@@ -2130,5 +2131,71 @@ function find(data) {
 
 从BST中删除节点的第一步是判断当前结点是否包含带删除数据，如果包含，则删除该节点；如果不包含，则比较当前节点上的数据和待删除节点的数据：如果待删除数据小于当前节点的数据，则移至当前节点的左节点进行比较；如果删除数据大于当前节点的数据，则移至当前节点的右结点进行比较。
 
+如果待删除节点是叶子节点，那么只需要将从父节点指向它的链接指向null。
 
+如果待删除节点只包含一个节点，那么原本指向它的节点就得做些调整，使其指向它的子节点。
+
+如果待删除节点包含两个字节点，正确的方法有两种：查找待删除节点左子树上的最大值；查找待删除节点右子树上的最小节点。
+
+```javascript
+function remove(data) {
+    root = removeNode(this.root, data);
+}
+function removeNode(node, data) {
+    if(node == null) {
+        return null;
+    }
+    if(data == node.data) {
+        // 如果没有子节点的节点（叶子节点）
+        if(node.left == null && node.right == null) {
+            return null;
+        }
+        // 没有左子节点的节点
+        if(node.left == null) {
+            return node.right;
+        }
+        // 没有右子节点的节点
+        if(node.right == null) {
+            return node.left;
+        }
+        // 有两个子节点的节点
+        var tempNode = getSmalllest(node.right);
+        node.data = tempNode.data;
+        node.right = removeNode(node.right, tempNode.data);
+        return node;
+    } else if(data < node.data) {
+        node.left = removeNode(node.left, data);
+        return node;
+    } else {
+        node.right = removeNode(node.right, data);
+        return node;
+    }
+}
+```
+
+### 计数
+
+使用BST记录 考试成绩的分布：给定一组考试成绩，可以写一段程序将它们加入一个BST，如果某成绩尚未在BST中出现，就将其加入BST；如果已经出现，就将出现的次数加1.
+
+先修改Node对象的定义，为其增加记录成绩出现次数的成员。
+
+```javascript
+function Node (data, left, right) {
+    this.data = data;
+    this.count = 1;
+    this.left = left;
+    this.right = right;
+    this.show = show;
+}
+```
+
+当向BST插入一条成绩（Node对象）时，将出现频次设为1。此时BST的`insert()`方法还能正常工作，但是，当次数增加时，就需要一个新方法来更新BST中的节点。
+
+```javascript
+function update(data) {
+    var grade = this.find(data);
+    grade.count++;
+    return grade;
+}
+```
 未更新完。。。
