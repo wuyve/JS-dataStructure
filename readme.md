@@ -66,6 +66,17 @@
             - [查找给定值](#查找给定值)
         - [从二叉树上删除节点](#从二叉树上删除节点)
         - [计数](#计数)
+    - [图和图算法](#图和图算法)
+        - [图的定义](#图的定义)
+        - [图类](#图类)
+            - [表示顶点](#表示顶点)
+            - [表示边](#表示边)
+            - [构件图](#构件图)
+            - [一个完整的Graph类的完整定义](#一个完整的graph类的完整定义)
+        - [搜索图](#搜索图)
+            - [深度优先搜索](#深度优先搜索)
+            - [广度优先搜索](#广度优先搜索)
+        - [查找最短路径](#查找最短路径)
 
 <!-- /TOC -->
 
@@ -2198,4 +2209,221 @@ function update(data) {
     return grade;
 }
 ```
+
+## 图和图算法
+
+### 图的定义
+
+图是由边的集合及顶点的集合组成。
+
+如果一个图的顶点对是有序的，则称之为**有向图**。在对有向图中的顶点对排序后，便可以在两个顶点之间绘制一个箭头，有向图表明了顶点的流向。
+
+如果图是无序的，则称之为无序图。
+
+图中的一系列顶点构成路径，路径中所有的顶点都由边连接。路径的长度用路径中第一个顶点到最后一个顶点之间边的数量表示。由指向自身的顶点组成的路径称之为**环**，环的长度为0.
+
+**圈**是至少有一条边的路径，且路径的第一个顶点和最后一个顶点相同。无论是有向图还是无向图，只要是没有重复边或重复顶点的圈，就是一个简单圈。除了第一个和最后一个顶点外，路径的其他顶点有重复的圈称为**平凡圈**。
+
+如果两个顶点之间有路径，那么这两个顶点就是**强连通**的，反之亦然。如果有向图的所有的顶点都是强连通的，那么这个有向图也是强连通的。
+
+### 图类
+
+#### 表示顶点
+
+创建一个`Vertex`类来保存顶点和边。Vertex类有两个数据成员：一个用于标识顶点，另一个是表明这个顶点是否被访问过的布尔值。
+
+```javascript
+function Vertex(label, wasVisited) {
+    this.label = label;
+    this.wasVisited = wasVisited;
+}
+```
+
+将所有的顶点保存到数组中，在图类里，可以通过他们在数组中的位置引用他们。
+
+#### 表示边
+
+将表示图的边的方法称为**邻接表**或**邻接表数组**。这种方法是将边存储为由顶点的相邻顶点列表构成的数组，并以此顶点为索引。
+
+另一种表示图边的方法称为**邻接矩阵**。它是一个二维数组，其中的元素表示两个顶点之间是否由一条边。
+
+#### 构件图
+
+```javascript
+function Graph(v) {
+    this.vertices = v;
+    this.edges = 0;
+    this.adj = [];
+    for(let i = 0; i < this.vertices; ++i) {
+        this.adj[i] = [];
+        this.adj[i].push('');
+    }
+    this.addEdge = addEdge;
+    this.showGraph = showGraph;
+}
+// 添加顶点函数
+// 当调用这个函数并传入顶点A和B时，函数会先查找顶点A的邻接表，将顶点B添加到列表中，然后再查找顶点B的邻接表，将顶点A加入列表。最后，这个函数会将边数加1
+function addEdge(v, w) {
+    this.adj[v].push(w);
+    this.adj[w].push(v);
+    this.edges++;
+}
+// 打印所有顶点及其相邻顶点列表
+function showGraph() {
+    for(let i = 0; i < this.vertices; ++i) {
+        console.log(i + '->');
+        for(let j = 0; j < this.vertices; ++j) {
+            if(this.adj[i][j] != undefined) {
+                console.log(this.adj[i][j] + '');
+            }
+            console.log('');
+        }
+    }
+}
+```
+
+#### 一个完整的Graph类的完整定义
+
+```javascript
+function Graph(v) {
+    this.vertices = v;
+    this.edges = 0;
+    this.adj = [];
+    for(let i = 0; i < this.vertices; ++i) {
+        this.adj[i] = [];
+        this.adj[i].push('');
+    }
+    this.addEdge = addEdge;
+    this.showGraph = showGraph;
+}
+// 添加顶点函数
+// 当调用这个函数并传入顶点A和B时，函数会先查找顶点A的邻接表，将顶点B添加到列表中，然后再查找顶点B的邻接表，将顶点A加入列表。最后，这个函数会将边数加1
+function addEdge(v, w) {
+    this.adj[v].push(w);
+    this.adj[w].push(v);
+    this.edges++;
+}
+// 打印所有顶点及其相邻顶点列表
+function showGraph() {
+    for(let i = 0; i < this.vertices; ++i) {
+        console.log(i + '->');
+        for(let j = 0; j < this.vertices; ++j) {
+            if(this.adj[i][j] != undefined) {
+                console.log(this.adj[i][j] + '');
+            }
+            console.log('');
+        }
+    }
+}
+
+// 测试
+g = new Graph(5);
+g.addEdge(0, 1);
+g.addEdge(0, 2);
+g.addEdge(1, 3);
+g.addEdge(2, 4);
+g.showGraph();
+```
+
+运行结果：
+
+`
+0-> 1 2
+1-> 0 3
+2-> 0 4
+3-> 1
+4-> 2
+`
+
+### 搜索图
+
+在图上可以执行两种基础搜索：深度优先搜索和广度优先搜索。
+
+#### 深度优先搜索
+
+深度优先搜索包括从一条路径的起始顶点开始追溯，直到到达最后一个顶点，然后回溯，继续追溯下一条路径，直到到达最后的定点，如此往复，直到没有路径为止。
+
+完整代码:
+
+```javascript
+function Graph(v) {
+    this.vertices = v;
+    this.edges = 0;
+    this.adj = [];
+    for(let i = 0; i < this.vertices; ++i) {
+        this.adj[i] = [];
+        this.adj[i].push('');
+    }
+    this.addEdge = addEdge;
+    this.showGraph = showGraph;
+    this.dfs = dfs;
+    this.marked = [];
+    for(let i = 0; i < this.vertices; ++i) {
+        this.marked[i] = false;
+    }
+}
+// 添加顶点函数
+// 当调用这个函数并传入顶点A和B时，函数会先查找顶点A的邻接表，将顶点B添加到列表中，然后再查找顶点B的邻接表，将顶点A加入列表。最后，这个函数会将边数加1
+function addEdge(v, w) {
+    this.adj[v].push(w);
+    this.adj[w].push(v);
+    this.edges++;
+}
+// 打印所有顶点及其相邻顶点列表
+function showGraph() {
+    for(let i = 0; i < this.vertices; ++i) {
+        console.log(i + '->');
+        for(let j = 0; j < this.vertices; ++j) {
+            if(this.adj[i][j] != undefined) {
+                console.log(this.adj[i][j] + '');
+            }
+            console.log('');
+        }
+    }
+}
+function dfs(v) {
+    this.marked[v] = true;
+    if(this.adj[v] != undefined) {
+        console.log('visted vertex: ' + v);
+    }
+    for(let w in this.adj[v]) {
+        if(!this.marked[w]) {
+            this.dfs(w)
+        }
+    }
+}
+```
+
+#### 广度优先搜索
+
+广度优先搜索算法使用了抽象的队列而不是数组来对已访问过的顶点进行排序。其算法工作原理如下：
+
+1. 查找与当前顶点相邻的未访问顶点，将其添加到已访问顶点列表及队列中；
+2. 从图中取下一个顶点v，添加到已访问的顶点列表；
+3. 将所有与v相邻的未访问顶点添加到队列。
+
+以下是广度优先搜索函数的定义 
+
+```javascript
+function dfs(s) {
+    var queue = [];
+    this.marked[s] = true;
+    queue.push(s);  // 添加到队尾
+    while(queue.length > 0) {
+        var v = queue.shift();  // 从队首移除
+        if(this.adj[v] != undefined) {
+            console.log('visited vertex: ' + v);
+        }
+        for(let w in this.adj[v]) {
+            if(!this.marked[w]) {
+                this.marked[w] = true;
+                queue.push(w);
+            }
+        }
+    }
+}
+```
+
+### 查找最短路径
+
 未更新完。。。
