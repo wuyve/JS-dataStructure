@@ -77,6 +77,24 @@
             - [深度优先搜索](#深度优先搜索)
             - [广度优先搜索](#广度优先搜索)
         - [查找最短路径](#查找最短路径)
+            - [广度优先搜索对应的最短路径](#广度优先搜索对应的最短路径)
+            - [确定路径](#确定路径)
+        - [拓扑排序](#拓扑排序)
+            - [拓扑排序算法](#拓扑排序算法)
+            - [实现拓扑排序算法](#实现拓扑排序算法)
+    - [排序算法](#排序算法)
+        - [数组测试平台](#数组测试平台)
+        - [基本排序算法](#基本排序算法)
+            - [冒泡排序](#冒泡排序)
+            - [选择排序](#选择排序)
+            - [插入排序](#插入排序)
+            - [基本排序算法的计时比较](#基本排序算法的计时比较)
+        - [高级排序](#高级排序)
+            - [希尔排序](#希尔排序)
+                - [计算动态间隔序列](#计算动态间隔序列)
+            - [归并排序](#归并排序)
+                - [自顶向下的归并排序](#自顶向下的归并排序)
+                - [自顶向上的归并排序](#自顶向上的归并排序)
 
 <!-- /TOC -->
 
@@ -2425,5 +2443,880 @@ function dfs(s) {
 ```
 
 ### 查找最短路径
+
+#### 广度优先搜索对应的最短路径
+
+在执行广度优先搜索时，会自动查找从一个顶点到另一个相连顶点的最短路径。
+
+#### 确定路径
+
+首先，需要一个数组来保存从一个顶点到下一个顶点的所有边，将这个数组命名为`edgeTo`。因为从始至终使用的都是广度优先搜索函数，所以每次都会遇到一个没有标记的顶点，除了对它进行标记外，还会从邻接表列表中我们正在探索的那个顶点添加一条边到这个顶点。
+
+下面是确定最短路径的完整程序：
+
+```javascript
+function Graph(v) {
+    this.vertices = v;
+    this.edges = 0;
+    this.adj = [];
+    for(let i = 0; i < this.vertices; ++i) {
+        this.adj[i] = [];
+        this.adj[i].push('');
+    }
+    this.addEdge = addEdge;
+    this.showGraph = showGraph;
+    this.dfs = dfs;
+    this.marked = [];
+    for(var i = 0; i < this.vertices; ++i) {
+        this.marked[i] = false;
+    }
+    this.bfs = bfs;
+    this.edgeTo = [];
+    this.pathTo = pathTo;
+    this.hasPathto = hasPathto;
+}
+function addEdge(v, w) {
+    this.adj[v].push(w);
+    this.adj[w].push(v);
+    this.edges++;
+}
+function showGraph() {
+    for(var i = 0; i < this.vertices; ++i) {
+        console.log(i + '->');
+        visited.push(this.vertexList[i]);
+        for(var j = 0; j < this.vertices; ++j) {
+            if(this.adj[i][j] != undefined) {
+                console.log(this.adj[i][j] + '');
+            }
+            console.log('');
+        }
+    }
+}
+function bfs(s) {
+    var queue = [];
+    this.marked[s] = true;
+    queue.push(s);
+    while(queue.length > 0) {
+        var v = queue.shift();
+        if(v == undefined) {
+            console.log('visited vertex: ' + v);
+        }
+        for(let w in this.adj[v]) {
+            if(!this.marked[w]) {
+                this.edgeTo[w] = v;
+                this.marked[w] = true;
+                queue.unshift(w);
+            }
+        }
+    }
+}
+function dfs(v) {
+    this.marked[v] = true;
+    if(this.adj[v] != undefined) {
+        console.log('Visited vertex: ' + v);
+    }
+    for(var w in this.adj[v]) {
+        if(this.marked[w]) {
+            this.dfs(w);
+        }
+    }
+}
+function pathTo(v) {
+    var source = 0;
+    if(!this.hasPathto(v)) {
+        return undefined;
+    }
+    var path = [];
+    for(var i = v; i != source; i = this.edgeTo[i]) {
+        path.push(i);
+    }
+    path.push(source);
+    return path;
+}
+function hasPathto(v) {
+    return this.marked[v];
+}
+
+// 测试
+g = new Graph(5);
+g.bfs(0);
+g.addEdge(0, 1);
+g.addEdge(0, 2);
+g.addEdge(1, 3);
+g.addEdge(2, 4);
+var vertex = 4;
+var paths = g.pathTo(vertex);
+while(paths.length > 0) {
+    if(paths.length > 1) {
+        console.log(paths.pop() + '-');
+    } else {
+        console.log(paths.pop());
+    }
+}
+```
+
+### 拓扑排序
+
+**拓扑排序**会对有向图的所有顶点进行排序，使有向边从前面的顶点指向后面的顶点。
+
+#### 拓扑排序算法
+拓扑排序算法与深度优先搜索类似，不同的是，拓扑排序算法不会立即输出已访问的顶点，而是访问当前顶点邻接表中的所有相邻顶点，直到这个列表穷尽，才将当前顶点压入栈中。
+
+#### 实现拓扑排序算法
+
+拓扑排序算法被拆为两个函数，第一个函数`topSort()`，会设置排序进程并调用一个辅助函数`topSortHelper()`，然后会显示排序好的顶点列表。
+
+主要工作是在递归函数`topSortHelper()`中完成的。这个函数会将当前顶点标记为已访问，然后递归访问当前顶点邻接表中的每个相邻顶点，标记这些顶点为已访问，最后，将当前顶点压入栈。
+
+```javascript
+function topSort() {
+    var stack = [];
+    var visited = [];
+    for(var i = 0; i < this.vertices; i++) {
+        visited[i] = false;
+    }
+    for(var i = 0; i < stack.length; i++) {
+        if(visited[i] == false) {
+            this.topSortHelper(i, visited, stack);
+        }
+    }
+    for(var i = 0; i < stack.length; i++) {
+        if(stack[i] != undefined && stack[i] != false) {
+            console.log(this.vertexList[stack[i]]);
+        }
+    }
+}
+function topSortHelper(v, visited, stack) {
+    visited[v] = true;
+    for(var w in this.adj[v]) {
+        if(!visited[w]) {
+            this.topSortHelper(visited[w], visited, stack);
+        }
+    }
+    stack.push(v);
+}
+```
+
+下面是整个部分的完整定义：
+
+```javascript
+function Graph(v) {
+    this.vertices = v;
+    this.vertexList = [];
+    this.edges = 0;
+    this.adj = [];
+    for(let i = 0; i < this.vertices; ++i) {
+        this.adj[i] = [];
+        this.adj[i].push('');
+    }
+    this.addEdge = addEdge;
+    this.showGraph = showGraph;
+    this.dfs = dfs;
+    this.marked = [];
+    for(var i = 0; i < this.vertices; ++i) {
+        this.marked[i] = false;
+    }
+    this.bfs = bfs;
+    this.edgeTo = [];
+    this.hasPathto = hasPathto;
+    this.topSortHelper = topSortHelper;
+    this.topSort = topSort;
+}
+function addEdge(v, w) {
+    this.adj[v].push(w);
+    this.adj[w].push(v);
+    this.edges++;
+}
+function showGraph() {
+    var visited = [];
+    for(var i = 0; i < this.vertices; ++i) {
+        console.log(this.vertexList[i] + '->');
+        visited.push(this.vertexList[i]);
+        for(var j = 0; j < this.vertices; ++j) {
+            if(this.adj[i][j] != undefined) {
+                if(visited.indexOf(this.vertexList[j]) < 0) {
+                    console.log(this.vertexList[j] + '');
+                }
+            }
+        }
+        console.log('');
+        visited.pop();
+    }
+}
+function bfs(s) {
+    var queue = [];
+    this.marked[s] = true;
+    queue.unshift(s);
+    while(queue.length > 0) {
+        var v = queue.shift();
+        if(typeof(v) != 'string') {
+            console.log('visited vertex: ' + v);
+        }
+        for(let w in this.adj[v]) {
+            if(!this.marked[w]) {
+                this.edgeTo[w] = v;
+                this.marked[w] = true;
+                queue.unshift(w);
+            }
+        }
+    }
+}
+function dfs(v) {
+    this.marked[v] = true;
+    if(this.adj[v] != undefined) {
+        console.log('Visited vertex: ' + v);
+    }
+    for(var w in this.adj[v]) {
+        if(this.marked[w]) {
+            this.dfs(w);
+        }
+    }
+}
+function pathTo(v) {
+    var source = 0;
+    if(!this.hasPathto(v)) {
+        return undefined;
+    }
+    var path = [];
+    for(var i = v; i != source; i = this.edgeTo[i]) {
+        path.push(i);
+    }
+    path.push(source);
+    return path;
+}
+function hasPathto(v) {
+    return this.marked[v];
+}
+function topSort() {
+    var stack = [];
+    var visited = [];
+    for(var i = 0; i < this.vertices; i++) {
+        visited[i] = false;
+    }
+    for(var i = 0; i < stack.length; i++) {
+        if(visited[i] == false) {
+            this.topSortHelper(i, visited, stack);
+        }
+    }
+    for(var i = 0; i < stack.length; i++) {
+        if(stack[i] != undefined && stack[i] != false) {
+            console.log(this.vertexList[stack[i]]);
+        }
+    }
+}
+function topSortHelper(v, visited, stack) {
+    visited[v] = true;
+    for(var w in this.adj[v]) {
+        if(!visited[w]) {
+            this.topSortHelper(visited[w], visited, stack);
+        }
+    }
+    stack.push(v);
+}
+// 测试
+g = new Graph(6);
+g.addEdge(1, 2);
+g.addEdge(2, 5);
+g.addEdge(1, 3);
+g.addEdge(1, 4);
+g.addEdge(0, 1);
+g.vertexList = ['cs1', 'cs2', 'Data Structures', 'Assembly Language', 'Operating Systems', 'Algorithms'];
+g.showGraph();
+g.topSort();
+```
+
+## 排序算法
+
+### 数组测试平台
+
+创建一个数组类和一些封装常规数组操作的函数：插入新数据，显示数组数据集调用不同的排序算法，这个类还包含了一个`swap()`函数，用于交换数组元素。
+
+```javascript
+function CArray(numElements) {
+    this.dataStore = [];
+    this.pos = 0;
+    this.numElements = numElements;
+    this.insert = insert;
+    this.toString = toString;
+    this.clear = clear;
+    this.setData = setData;
+    this.swap = swap;
+    for(var i  = 0; i < numElements; ++i) {
+        this.dataStore[i] = i;
+    }
+}
+function setData() {
+    for(var i = 0; i < this.numElements; ++i) {
+        this.dataStore[i] = Math.floor(Math.random() * (this.numElements + 1));
+    }
+}
+function clear() {
+    for(var i = 0; i < this.dataStore.length; ++i) {
+        this.dataStore[i] = 0;
+    }
+}
+function insert(element) {
+    this.dataStore[this.pos++] = element;
+}
+function toString() {
+    var restr = '';
+    for(var i = 0; i < this.dataStore.length; ++i) {
+        restr += this.dataStore[i] + ' ';
+        if(i > 0 & i % 10 == 0) {
+            restr += '\n';
+        }
+    }
+    return restr;
+}
+function swap(arr, index1, index2) {
+    var temp = arr[index1];
+    arr[index1] = arr[index2];
+    arr[index2] = temp;
+}
+```
+
+测试程序：
+
+```javascript
+var numElements = 100;
+var myNums = new CArray(numElements);
+myNums.setData();
+console.log(myNums.toString());
+```
+
+运行结果：
+
+`3 59 95 98 94 44 84 9 100 9 85 18 52 56 20 85 50 78 55 22 33 79 66 8 65 1 95 44 28 34 93 61 92 23 17 8 99 41 92 61 62 23 25 14 53 79 36 91 73 54 8 21 43 25 2 81 51 15 36 31 23 22 12 39 32 78 94 0 41 75 93 6 16 77 97 53 75 78 41 32 71 73 39 58 71 22 72 0 87 91 11 51 16 58 46 15 56 34 55 33`
+
+### 基本排序算法
+
+#### 冒泡排序
+
+冒泡排序算法是最慢的排序算法之一，但也是最容易实现的排序算法。
+
+原理：比较两个相邻的元素，将值大的元素交换到右边。
+
+思路：
+
+1. 第一次比较：首先比较第一和第二个数，将小数放在前面，将大数放在后面。
+2. 比较第2和第3个数，将小数 放在前面，大数放在后面。
+3. 如此继续，知道比较到最后的两个数，将小数放在前面，大数放在后面，重复步骤，直至全部排序完成
+4. 在上面一趟比较完成后，最后一个数一定是数组中最大的一个数，所以在比较第二趟的时候，最后一个数是不参加比较的。
+5. 在第二趟比较完成后，倒数第二个数也一定是数组中倒数第二大数，所以在第三趟的比较中，最后两个数是不参与比较的。
+6. 依次类推，每一趟比较次数减少依次
+
+冒泡排序函数：
+
+```javascript
+function bubbleSort() {
+    var numElements = this.dataStore.length;
+    var temp;
+    for(var outer = numElements; outer >= 2; --outer) {
+        for(var inner = 0; inner <= outer - 1; ++inner) {
+            if(this.dataStore[inner] > this.dataStore[inner + 1]) {
+                swap(this.dataStore, inner, inner + 1);
+            }
+        }
+    }
+}
+```
+
+
+使用`bubbleSort()`对10个数字进行排序：
+
+```javascript
+function CArray(numElements) {
+    this.dataStore = [];
+    this.pos = 0;
+    this.numElements = numElements;
+    this.insert = insert;
+    this.toString = toString;
+    this.clear = clear;
+    this.setData = setData;
+    this.swap = swap;
+    this.bubbleSort = bubbleSort;
+    for(var i  = 0; i < numElements; ++i) {
+        this.dataStore[i] = i;
+    }
+}
+function setData() {
+    for(var i = 0; i < this.numElements; ++i) {
+        this.dataStore[i] = Math.floor(Math.random() * (this.numElements + 1));
+    }
+}
+function clear() {
+    for(var i = 0; i < this.dataStore.length; ++i) {
+        this.dataStore[i] = 0;
+    }
+}
+function insert(element) {
+    this.dataStore[this.pos++] = element;
+}
+function toString() {
+    var restr = '';
+    for(var i = 0; i < this.dataStore.length; ++i) {
+        restr += this.dataStore[i] + ' ';
+        if(i > 0 & i % 10 == 0) {
+            restr += '\n';
+        }
+    }
+    return restr;
+}
+function swap(arr, index1, index2) {
+    var temp = arr[index1];
+    arr[index1] = arr[index2];
+    arr[index2] = temp;
+}
+
+function bubbleSort() {
+    var numElements = this.dataStore.length;
+    var temp;
+    for(var outer = numElements; outer >= 2; --outer) {
+        for(var inner = 0; inner <= outer - 1; ++inner) {
+            if(this.dataStore[inner] > this.dataStore[inner + 1]) {
+                swap(this.dataStore, inner, inner + 1);
+            }
+        }
+    }
+}
+
+var numElements = 10;
+var myNums = new CArray(numElements);
+myNums.setData();
+console.log(myNums.toString());
+myNums.bubbleSort();
+console.log();
+console.log(myNums.toString());
+```
+
+运行结果：
+
+`8 2 6 4 6 9 10 3 1 9`
+
+`1 2 3 4 6 6 8 9 9 10`
+
+
+在`bubbleSort()`函数中添加对`toString()`函数的调用：
+
+```javascript
+function bubbleSort() {
+    var numElements = this.dataStore.length;
+    var temp;
+    for(var outer = numElements; outer >= 2; --outer) {
+        for(var inner = 0; inner <= outer - 1; ++inner) {
+            if(this.dataStore[inner] > this.dataStore[inner + 1]) {
+                swap(this.dataStore, inner, inner + 1);
+            }
+        }
+        console.log(this.toString());
+    }
+}
+```
+
+重新执行上述函数：
+
+`2 7 10 1 3 9 5 3 0 6`
+
+`2 7 1 3 9 5 3 0 6 10`
+
+`2 1 3 7 5 3 0 6 9 10`
+
+`1 2 3 5 3 0 6 7 9 10`
+
+`1 2 3 3 0 5 6 7 9 10`
+
+`1 2 3 0 3 5 6 7 9 10`
+
+`1 2 0 3 3 5 6 7 9 10`
+
+`1 0 2 3 3 5 6 7 9 10`
+
+`0 1 2 3 3 5 6 7 9 10`
+
+`0 1 2 3 3 5 6 7 9 10`
+
+
+`0 1 2 3 3 5 6 7 9 10`
+
+
+#### 选择排序
+
+选择排序的思想：选择排序，从头至尾扫描序列，找出最小的一个元素，和第一个元素交换，接着从剩下的元素中继续这种选择和交换方式，最终得到一个有序序列。
+
+选择排序会用到嵌套循环。外循环从数组的第一个元素移动到倒数第二个元素；内循环从第二个数组元素移动到最后一个元素，查找比当前外循环所指向的元素小的元素。每次内循环迭代后，数组中最小的值都会被赋值到合适的位置。
+
+下面是选择排序函数`selectionSort()`的代码：
+
+```javascript
+function selectionSort() {
+    var min,temp;
+    for(var outer = 0; outer <= this.dataStore.length - 2; ++outer) {
+        min = outer;
+        for(var inner = outer + 1; inner <= this.dataStore.length - 1; ++inner) {
+            if(this.dataStore[inner] < this.dataStore[min]) {
+                min = inner;
+            }
+            swap(this.dataStore, outer, min);
+        }
+    }
+}
+```
+
+运行程序：
+
+`3 6 10 4 2 1 10 7 0 0`
+
+`0 6 10 4 3 2 10 7 1 0`
+
+`0 0 10 6 4 3 10 7 2 1`
+
+`0 0 1 10 6 4 10 7 3 2`
+
+`0 0 1 2 10 6 10 7 4 3`
+
+`0 0 1 2 3 10 10 7 6 4`
+
+`0 0 1 2 3 4 10 10 7 6`
+
+`0 0 1 2 3 4 6 10 10 7`
+
+`0 0 1 2 3 4 6 7 10 10`
+
+`0 0 1 2 3 4 6 7 10 10`
+
+
+`0 0 1 2 3 4 6 7 10 10`
+
+
+#### 插入排序
+
+插入排序的思想：将数组的第一个数认为是有序数组，从后往前（从前往后）扫描该有序数组，把数组中其余n-1个数，根据数值的大小，插入到有序数组中，直至数组中的所有数有序排列为止。这样的话，n个元素需要进行n-1趟排序。
+
+插入排序有两个循环。外循环将数组元素挨个移动，而内循环则对外循环中选中的元素及它后面的那个元素进行比较。如果外循环中选中的元素比内循环中选中的元素小，那么数组元素会向右移动，为内循环中的这个元素腾出位置。
+
+下面是插入排序`insertionSort()`的代码
+
+```javascript
+function insertionSort() {
+    var temp, inner;
+    for(var outer = 1; outer <= this.dataStore.length - 1; ++outer) {
+        temp = this.dataStore[outer];
+        inner = outer;
+        while(inner > 0 && (this.dataStore[inner - 1] >= temp)) {
+            this.dataStore[inner] = this.dataStore[inner - 1];
+            --inner;
+        }
+        this.dataStore[inner] = temp;
+        console.log(this.toString());
+    }
+}
+```
+
+运行程序：
+
+`4 10 7 6 3 1 9 8 6 0`
+
+`4 10 7 6 3 1 9 8 6 0`
+
+`4 7 10 6 3 1 9 8 6 0`
+
+`4 6 7 10 3 1 9 8 6 0`
+
+`3 4 6 7 10 1 9 8 6 0`
+
+`1 3 4 6 7 10 9 8 6 0`
+
+`1 3 4 6 7 9 10 8 6 0`
+
+`1 3 4 6 7 8 9 10 6 0`
+
+`1 3 4 6 6 7 8 9 10 0`
+
+`0 1 3 4 6 6 7 8 9 10`
+
+
+`0 1 3 4 6 6 7 8 9 10`
+
+
+#### 基本排序算法的计时比较
+
+计时系统是基于Javascript Data对象的`getTime()`函数来取得系统时间，这个函数的运行方式如下:`var start = new Date().getTime();`
+
+要记录代码执行的时间，首先启动计时器，执行代码，然后在代码执行结束时停止计时器。计时器停止时记录的时间与计时器启动时记录的时间之差就是排序所花费的时间。
+
+为排序函数计时（对长度为100的数组进行排序）：
+
+```javascript
+var numElements = 100;
+var myNums = new CArray(numElements);
+myNums.setData();
+
+/**对冒泡排序进行计时**/
+// 开始计时：
+var start = new Date().getTime();
+myNums.bubbleSort();
+var stop = new Date().getTime();
+var elapsed = stop - start;
+console.log('对' + numElements + '个元素执行冒泡排序所消耗的时间为：' + elapsed + '毫秒');
+
+/**对选择排序进行计时**/
+// 开始计时：
+start = new Date().getTime();
+myNums.selectionSort();
+stop = new Date().getTime();
+elapsed = stop - start;
+console.log('对' + numElements + '个元素执行选择排序所消耗的时间为：' + elapsed + '毫秒');
+
+/**对插入排序进行计时**/
+// 开始计时：
+start = new Date().getTime();
+myNums.insertionSort();
+stop = new Date().getTime();
+elapsed = stop - start;
+console.log('对' + numElements + '个元素执行插入排序所消耗的时间为：' + elapsed + '毫秒');
+```
+
+运行结果：
+
+对100个元素执行冒泡排序所消耗的时间为：1毫秒
+
+对100个元素执行选择排序所消耗的时间为：5毫秒
+
+对100个元素执行插入排序所消耗的时间为：0毫秒
+
+
+对1000个数字进行排序，运行结果：
+
+对1000个元素执行冒泡排序所消耗的时间为：10毫秒
+
+对1000个元素执行选择排序所消耗的时间为：10毫秒
+
+对1000个元素执行插入排序所消耗的时间为：0毫秒
+
+
+对10000个数字进行排序，运行结果：
+
+对10000个元素执行冒泡排序所消耗的时间为：322毫秒
+
+对10000个元素执行选择排序所消耗的时间为：133毫秒
+
+对10000个元素执行插入排序所消耗的时间为：3毫秒
+
+
+### 高级排序
+
+高级排序包括快速排序、希尔排序、归并排序和堆排序。
+
+#### 希尔排序
+
+希尔排序的工作原理：通过定义一个间隔序列来表示在排序过程中进行比较的元素之间有多远的间隔。
+
+下面是希尔排序算法`shellSort()`的代码：
+
+```javascript
+function shellSort() {
+    for(var g = 0; g < this.gaps.length; ++g) {
+        for(var i = this.gaps[g]; i < this.dataStore.length; ++i) {
+            var temp = this.dataStore[i];
+            for(var j = i; j >= this.gaps[g] && this.dataStore[j - this.gaps[g]] > temp; j -= this.gaps[g]) {
+                this.dataStore[j] = this.dataStore[j - this.gaps[g]];
+            }
+            this.dataStore[j] = temp;
+        }
+        console.log(this.dataStore);
+
+    }
+}
+```
+
+然后将`this.gaps = [5, 3, 1];`添加到`CArray()`函数中。
+
+然后再添加一个函数：
+
+```javascript
+function setGraps(arr) {
+    this.gaps = arr;
+}
+```
+
+对小数据集合执行希尔排序：
+
+```javascript
+var myNums = new CArray(10);
+myNums.setData();
+console.log('希尔排序前：');
+console.log(myNums.toString());
+console.log('希尔排序中：');
+myNums.shellSort();
+console.log('希尔排序后：');
+console.log(myNums.toString());
+```
+
+运行结果：
+
+希尔排序前：
+
+`3 3 7 4 10 8 2 5 7 6`
+
+希尔排序中：
+
+`[ 3, 2, 5, 4, 6, 8, 3, 7, 7, 10 ]  // 间隔5`
+
+`[ 3, 2, 5, 3, 6, 7, 4, 7, 8, 10 ]  // 间隔3`
+
+`[ 2, 3, 3, 4, 5, 6, 7, 7, 8, 10 ]  // 间隔1`
+
+希尔排序后：
+
+`2 3 3 4 5 6 7 7 8 10`
+
+
+##### 计算动态间隔序列
+
+Robert Sedgewick定义了一个`shellsort()`函数，在这个函数中可以通过一个公式来对希尔排序用到的间隔序列进行动态计算。
+
+`Sedgewick`的算法是通过下面的代码片段来决定初始间隔值的：
+
+```javascript
+var N = this.dataStore.length;
+var h = 1;
+while(h < N / 3) {
+    h = 3 * h + 1;
+}
+```
+
+间隔值确定好后，这个函数就可以像之前定义的`shellsort()`函数一样运行了，唯一的区别就是，回到外循环之前的最后一条语句会计算一个新的间隔值：`h = (h - 1) / 3`
+
+动态计算间隔序列的希尔排序：
+
+```javascript
+// 动态希尔排序算法：
+function shellSort1() {
+    var N = this.dataStore.length;
+    var h = 1;
+    while(h < N / 3) {
+        h = 3 * h + 1;
+    }
+    while(h >= 1) {
+        console.log('间隔为：' + h);
+        for(var i = h; i < N; i++) {
+            for(var j = i; j >= h && this.dataStore[j] < this.dataStore[j - h]; j -= h) {
+                swap(this.dataStore, j, j -h);
+            }
+        }
+        h = (h - 1) / 3;
+        console.log('排序后为：' + this.dataStore);
+    }
+}
+```
+
+执行下列程序：
+
+```javascript
+var myNums = new CArray(100);
+myNums.setData();
+console.log('希尔排序前1：');
+console.log(myNums.toString());
+console.log('希尔排序中1：');
+myNums.shellSort1();
+console.log('希尔排序后1：');
+console.log(myNums.toString());
+```
+
+运行结果：
+
+希尔排序前1：
+
+65 31 51 85 0 35 7 90 31 40 28
+
+78 75 39 37 72 22 15 31 2 21
+
+100 15 98 87 44 40 35 32 46 57
+
+2 55 27 10 56 6 39 8 37 6
+
+26 18 41 99 86 14 93 31 82 100
+
+12 16 29 26 47 73 52 34 18 22
+
+41 32 19 57 35 79 25 55 86 15
+
+79 69 57 66 79 0 5 51 57 90
+
+43 61 52 47 12 36 77 22 29 40
+
+0 79 63 5 76 87 17 88 19
+
+希尔排序中1：
+
+间隔为：40,排序后为：6,26,18,41,0,12,7,77,22,29,28,0,16,29,5,47,22,15,31,2,21,41,15,19,57,35,40,25,32,46,15,2,55,27,10,56,0,5,8,37,65,31,51,52,47,35,14,90,31,40,40,12,75,39,26,72,73,17,34,18,22,100,32,98,87,44,79,35,55,86,57,79,69,57,66,79,6,39,51,57,90,43,61,85,99,86,36,93,31,82,100,78,79,63,37,76,87,52,88,19
+
+间隔为：13,排序后为：6,5,18,22,0,2,2,14,10,15,0,0,8,29,25,26,37,15,12,7,18,19,29,19,5,12,37,26,31,41,15,17,34,21,22,31,28,6,16,40,39,32,43,52,31,35,27,22,56,31,40,35,44,57,35,46,61,47,52,69,36,66,32,57,39,51,65,47,51,73,57,55,77,41,93,40,82,87,75,79,63,55,76,85,79,86,57,100,79,98,100,78,79,90,72,86,87,99,88,90
+
+间隔为：4,排序后为：0,2,0,0,5,5,2,7,6,6,12,14,8,12,15,17,10,15,16,19,18,15,18,22,28,19,22,22,31,21,25,26,31,29,27,26,34,31,29,31,36,32,32,35,37,35,35,40,39,41,37,40,39,41,40,46,44,47,43,47,51,51,52,52,56,55,57,55,61,57,57,57,63,66,65,69,77,73,72,78,79,86,75,79,79,87,76,85,79,90,88,86,82,98,93,90,87,99,100,100
+
+间隔为：1,排序后为：0,0,0,2,2,5,5,6,6,7,8,10,12,12,14,15,15,15,16,17,18,18,19,19,21,22,22,22,25,26,26,27,28,29,29,31,31,31,31,32,32,34,35,35,35,36,37,37,39,39,40,40,40,41,41,43,44,46,47,47,51,51,52,52,55,55,56,57,57,57,57,61,63,65,66,69,72,73,75,76,77,78,79,79,79,79,82,85,86,86,87,87,88,90,90,93,98,99,100,100
+
+希尔排序后1：
+
+0 0 0 2 2 5 5 6 6 7 8
+
+10 12 12 14 15 15 15 16 17 18
+
+18 19 19 21 22 22 22 25 26 26
+
+27 28 29 29 31 31 31 31 32 32
+
+34 35 35 35 36 37 37 39 39 40
+
+40 40 41 41 43 44 46 47 47 51
+
+51 52 52 55 55 56 57 57 57 57
+
+61 63 65 66 69 72 73 75 76 77
+
+78 79 79 79 79 82 85 86 86 87
+
+87 88 90 90 93 98 99 100 100
+
+
+比较`shellSort()`算法：
+
+```javascript
+var myNums = new CArray(10000);
+myNums.setData();
+
+/**计算硬编码间隔序列的希尔排序**/
+var start = new Date().getTime();
+myNums.shellSort();
+var stop = new Date().getTime();
+var elapsed = stop - start;
+console.log('硬编码间隔序列的希尔排序消耗的时间为：' + elapsed + '毫秒');
+
+/**计算动态间隔序列的希尔排序**/
+start = new Date().getTime();
+myNums.shellSort1();
+stop = new Date().getTime();
+elapsed = stop - start;
+console.log('动态间隔序列的希尔排序消耗的时间为：' + elapsed + '毫秒');
+```
+
+运行结果：
+
+硬编码间隔序列的希尔排序消耗的时间为：31毫秒
+
+动态间隔序列的希尔排序消耗的时间为：4毫秒
+
+
+#### 归并排序
+
+实现原理：把一系列排好序的子序列合并成一个大的完整有序序列。
+
+##### 自顶向下的归并排序
+
+通常来说，归并排序会使用递归的算法来实现，然而，在JS中这种方法不太可行，因为这个算法的递归深度对它来讲太深了，所以使用一种非递归的方式来实现这个算法：自顶向上的归并排序。
+
+##### 自顶向上的归并排序
+
 
 未更新完。。。
