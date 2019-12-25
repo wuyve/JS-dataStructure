@@ -94,7 +94,11 @@
                 - [计算动态间隔序列](#计算动态间隔序列)
             - [归并排序](#归并排序)
                 - [自顶向下的归并排序](#自顶向下的归并排序)
-                - [自顶向上的归并排序](#自顶向上的归并排序)
+                - [自底向上的归并排序](#自底向上的归并排序)
+            - [快速排序](#快速排序)
+    - [检索算法](#检索算法)
+        - [顺序查找](#顺序查找)
+            - [查找最小值和最大值](#查找最小值和最大值-1)
 
 <!-- /TOC -->
 
@@ -3314,9 +3318,434 @@ console.log('动态间隔序列的希尔排序消耗的时间为：' + elapsed +
 
 ##### 自顶向下的归并排序
 
-通常来说，归并排序会使用递归的算法来实现，然而，在JS中这种方法不太可行，因为这个算法的递归深度对它来讲太深了，所以使用一种非递归的方式来实现这个算法：自顶向上的归并排序。
+通常来说，归并排序会使用递归的算法来实现，然而，在JS中这种方法不太可行，因为这个算法的递归深度对它来讲太深了，所以使用一种非递归的方式来实现这个算法：自底向上的归并排序。
 
-##### 自顶向上的归并排序
+##### 自底向上的归并排序
 
+这个算法首先将数据集分解为一组只有一个元素的数组，然后通过创建一组左右子数组将它们慢慢合并起来，每次合并都保存一部分排好序的数据，直到最后剩下的这个数组所有的数据都已完美排序。
+
+JS实现的自底向上归并排序算法：
+
+```javascript
+function mergeSort(arr) {
+    if(arr.length < 2) {
+        return;
+    }
+    var step = 1;
+    var left, right;
+    while(step < arr.length) {
+        left = 0;
+        right = step;
+        while(right + step <= arr.length) {
+            mergeArrays(arr, left, left + step, right, right + step);
+            left = right + step;
+            right = left + step;
+        }
+        if(right < arr.length) {
+            mergeArrays(arr, left, left + step, right, arr.length);
+        }
+        step *= 2;
+    }
+}
+function mergeArrays(arr, startLeft, stopLeft, startRight, stopRight) {
+    var rightArr = new Array(stopRight - startRight + 1);
+    var leftArr = new Array(stopLeft - startLeft + 1);
+    k = startRight;
+    for(var i = 0; i < (rightArr.length - 1); ++i) {
+        rightArr[i] = arr[k];
+        ++k;
+    }
+    k = startLeft;
+    for(var i = 0; i < (leftArr.length - 1); ++i) {
+        leftArr[i] = arr[k];
+        ++k;
+    }
+    rightArr[rightArr.length - 1] = Infinity;  // 哨兵值
+    leftArr[leftArr.length - 1] = Infinity;  // 哨兵值
+    var m = 0; 
+    var n = 0;
+    for(var k = startLeft; k < stopRight; ++k) {
+        if(leftArr[m] <= rightArr[n]) {
+            arr[k] = leftArr[m];
+            m++;
+        } else {
+            arr[k] = rightArr[n];
+            n++;
+        }
+    }
+    console.log('left array - ', leftArr);
+    console.log('right array - ', rightArr);
+}
+
+var nums = [6, 10, 1, 9, 4, 8, 2, 7, 3, 5];
+console.log(nums);
+console.log();
+mergeSort(nums);
+console.log();
+console.log(nums);
+```
+
+运行结果：
+
+`[ 6, 10, 1, 9, 4, 8, 2, 7, 3, 5 ]`
+
+
+`left array -  [ 6, Infinity ]`
+
+`right array -  [ 10, Infinity ]`
+
+`left array -  [ 1, Infinity ]`
+
+`right array -  [ 9, Infinity ]`
+
+`left array -  [ 4, Infinity ]`
+
+`right array -  [ 8, Infinity ]`
+
+`left array -  [ 2, Infinity ]`
+
+`right array -  [ 7, Infinity ]`
+
+`left array -  [ 3, Infinity ]`
+
+`right array -  [ 5, Infinity ]`
+
+`left array -  [ 6, 10, Infinity ]`
+
+`right array -  [ 1, 9, Infinity ]`
+
+`left array -  [ 4, 8, Infinity ]`
+
+`right array -  [ 2, 7, Infinity ]`
+
+`left array -  [ 1, 6, 9, 10, Infinity ]`
+
+`right array -  [ 2, 4, 7, 8, Infinity ]`
+
+`left array -  [ 1, 2, 4, 6, 7, 8, 9, 10, Infinity ]`
+
+`right array -  [ 3, 5, Infinity ]`
+
+
+`[ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ]`
+
+
+已添加归并排序的CArray类：
+
+```javascript
+function CArray(numElements) {
+    this.gaps = [5, 3, 1];
+    this.dataStore = [];
+    this.pos = 0;
+    this.numElements = numElements;
+    this.insert = insert;
+    this.toString = toString;
+    this.clear = clear;
+    this.setData = setData;
+    this.swap = swap;
+    this.bubbleSort = bubbleSort;
+    this.selectionSort = selectionSort;
+    this.insertionSort = insertionSort;
+    this.shellSort = shellSort;
+    this.shellSort1 = shellSort1;
+    this.mergeSort = mergeSort;
+    this.mergeArrays = mergeArrays;
+    for(var i  = 0; i < numElements; ++i) {
+        this.dataStore[i] = i;
+    }
+}
+
+function mergeSort() {
+    if(this.dataStore.length < 2) {
+        return;
+    }
+    var step = 1;
+    var left, right;
+    while(step < this.dataStore.length) {
+        left = 0;
+        right = step;
+        while(right + step <= this.dataStore.length) {
+            mergeArrays(this.dataStore, left, left + step, right, right + step);
+            left = right + step;
+            right = left + step;
+        }
+        if(right < this.dataStore.length) {
+            mergeArrays(this.dataStore, left, left + step, right, this.dataStore.length);
+        }
+        step *= 2;
+    }
+}
+function mergeArrays(arr, startLeft, stopLeft, startRight, stopRight) {
+    var rightArr = new Array(stopRight - startRight + 1);
+    var leftArr = new Array(stopLeft - startLeft + 1);
+    k = startRight;
+    for(var i = 0; i < (rightArr.length - 1); ++i) {
+        rightArr[i] = arr[k];
+        ++k;
+    }
+    k = startLeft;
+    for(var i = 0; i < (leftArr.length - 1); ++i) {
+        leftArr[i] = arr[k];
+        ++k;
+    }
+    rightArr[rightArr.length - 1] = Infinity;  // 哨兵值
+    leftArr[leftArr.length - 1] = Infinity;  // 哨兵值
+    var m = 0; 
+    var n = 0;
+    for(var k = startLeft; k < stopRight; ++k) {
+        if(leftArr[m] <= rightArr[n]) {
+            arr[k] = leftArr[m];
+            m++;
+        } else {
+            arr[k] = rightArr[n];
+            n++;
+        }
+    }
+    console.log('left array - ', leftArr);
+    console.log('right array - ', rightArr);
+}
+
+var myNums = new CArray(10);
+myNums.setData();
+console.log(myNums.toString());
+myNums.mergeSort();
+console.log(myNums.toString());
+```
+
+运行结果：
+
+`5 4 2 3 7 0 5 6 5 2`
+
+`left array -  [ 5, Infinity ]`
+
+`right array -  [ 4, Infinity ]`
+
+`left array -  [ 2, Infinity ]`
+
+`right array -  [ 3, Infinity ]`
+
+`left array -  [ 7, Infinity ]`
+
+`right array -  [ 0, Infinity ]`
+
+`left array -  [ 5, Infinity ]`
+
+`right array -  [ 6, Infinity ]`
+
+`left array -  [ 5, Infinity ]`
+
+`right array -  [ 2, Infinity ]`
+
+`left array -  [ 4, 5, Infinity ]`
+
+`right array -  [ 2, 3, Infinity ]`
+
+`left array -  [ 0, 7, Infinity ]`
+
+`right array -  [ 5, 6, Infinity ]`
+
+`left array -  [ 2, 3, 4, 5, Infinity ]`
+
+`right array -  [ 0, 5, 6, 7, Infinity ]`
+
+`left array -  [ 0, 2, 3, 4, 5, 5, 6, 7, Infinity ]`
+
+`right array -  [ 2, 5, Infinity ]`
+
+`0 2 2 3 4 5 5 5 6 7`
+
+
+#### 快速排序
+
+快速排序是处理大数据集最快的排序算法之一。它是通过递归的方式将数据依次分解为包含较小元素和较大元素的不同子序列，该算法不断重复这个步骤直到所有数据都是有序的。
+
+这个算法首先要在列表中选择一个元素作为**基准值**。数据排序围绕基准值进行，将列表中小于基准值的元素移到数据的底部，将大于基准值的元素移到数组的顶部。
+
+快速排序的算法如下：
+
+1. 选择一个基准元素，将列表分割成两个子序列；
+2. 对列表重新排序，将所有小于基准值的元素放在基准值的前面，所有大于基准值的元素放在基准值的后面；
+3. 分别对较小元素的子序列和较大元素的子序列重复步骤1和2.
+
+这个算法的JS程序如下：
+
+```javascript
+function qSort(list) {
+    if(list.length == 0) {
+        return [];
+    }
+    var lesser = [];
+    var greater = [];
+    var pivot = list[0];
+    for(var i = 1; i < list.length; i++) {
+        if(list[i] < pivot) {
+            lesser.push(list[i]);
+        } else {
+            greater.push(list[i]);
+        }
+    }
+    return qSort(lesser).concat(pivot, aSort(greater));
+}
+```
+
+这个函数首先检查数组的长度是否为0，如果是，那么这个数组就不需要任何排序，函数直接返回。否则创建两个数组，一个用来存放比基准值小的元素，另一个用来存放比基准值大的元素。这里的基准值取自数组的第一个元素。接下来，这个函数对原始数组的元素进行遍历，根据他们与基准值的关系将它们放在合适的数组中。然后对于较小的数组和较大的数组分别递归调用这个函数。当递归结束时，再将较大的数组和较小的数组连接起来，最终形成一个有序数组并将结果返回。
+
+使用快速排序算法对数据进行排序：
+
+```javascript
+function qSort(list) {
+    if(list.length == 0) {
+        return [];
+    }
+    var lesser = [];
+    var greater = [];
+    var pivot = list[0];
+    for(var i = 1; i < list.length; i++) {
+        if(list[i] < pivot) {
+            lesser.push(list[i]);
+        } else {
+            greater.push(list[i]);
+        }
+    }
+    return qSort(lesser).concat(pivot, qSort(greater));
+}
+var a = [];
+for(var i = 0; i < 10; ++i) {
+    a[i] = Math.floor((Math.random() * 100) + 1);
+}
+console.log(a);
+console.log();
+console.log(qSort(a));
+```
+
+运行结果：
+
+`[ 18, 48, 74, 10, 91, 14, 90, 42, 1, 16 ]`
+
+`[ 1, 10, 14, 16, 18, 42, 48, 74, 90, 91 ]`
+
+快速排序算法非常适用于大型数据集合；在处理小数据集合时性能反而会下降。
+
+
+## 检索算法
+
+在列表中查找数据有两种方式：顺序查找和二分查找。顺序查找适用于元素随机排列的列表；二分查找适用于元素已排序的列表。二分查找效率更高，但是在查找之前要对列表进行排序。
+
+### 顺序查找
+
+顺序查找：从列表的第一个元素开始对列表元素逐个进行判断，直到找到了想要的结果，或者直到列表结尾也没有找到。
+
+有时也被称为线性查找。它属于暴力查找的一种，在执行查找时可能会访问到数据结构里的所有元素。
+
+测试顺序查找的代码：
+
+```javascript
+function dispArr(arr) {
+    for(var i = 0; i < arr.length; ++i) {
+        console.log(arr[i] + '');
+        if(i % 10 == 9) {
+            console.log();
+        }
+    }
+    if(i % 10 != 0) {
+        console.log();
+    }
+}
+function seqSearch(arr, data) {
+    for(var i = 0; i < arr.length; ++i) {
+        if(arr[i] == data) {
+            return i;
+        }
+    }
+    return -1;
+}
+var nums = [];
+for(var i = 0; i < 100; ++i) {
+    nums[i] = Math.floor(Math.random() *101);
+}
+var num = Math.floor(Math.random() * 10);
+console.log('要查找的数为:', num);
+var position = seqSearch(nums, num);
+if(position > -1) {
+    console.log(num + '在这个数组中的索引位置是：' + position);
+} else {
+    console.log(num + '没有出现在这个数组中');
+}
+dispArr(nums);
+```
+
+运行结果：
+
+`要查找的数为: 3`
+
+`3在这个数组中的索引位置是：12`
+
+`9 57 26 59 90 25 83 91 14 26`
+
+`76 19 3 40 44 98 89 70 68 7`
+
+`92 79 78 21 48 50 23 83 73 7`
+
+`93 94 93 51 75 97 77 77 11 72`
+
+`45 26 43 45 11 18 58 44 91 85`
+
+`36 62 89 15 82 25 71 66 23 10`
+
+`80 84 35 83 51 75 52 40 86 18`
+
+`84 76 72 75 73 1 98 100 55 10`
+
+`91 38 55 5 13 71 10 99 38 84`
+
+`61 0 72 54 74 94 79 4 20 77`
+
+
+#### 查找最小值和最大值
+
+如何数组中查找最小值：
+
+1. 将数组第一个元素赋值给一个变量，把这个变量作为最小值；
+2. 开始遍历数组，从第二个元素开始依次同当前最小值进行比较；
+3. 如果当前元素数值小于当前最小值，则将当前元素设为新的最小值；
+4. 移动到下一个元素，并且重复步骤3；
+5. 当程序结束时，这个变量中存储的就是最小值。
+
+同理，查找最大值也与此相似。
+
+查找最小值的代码：
+
+```javascript
+function findMin(arr) {
+    var min = arr[0];
+    for(var i = 1; i < arr.length; ++i) {
+        if(arr[i] < min) {
+            min = arr[i]
+        }
+    }
+    return min;
+}
+var nums = [];
+for(var i = 0; i < 100; ++i) {
+    nums[i] = Math.floor(Math.random() *101);
+}
+var minValue = findMin(nums);
+dispArr(nums);
+console.log('最小值为', minValue);
+```
+
+查找最大值函数：
+
+```javascript
+function findMax(arr) {
+    var max = arr[0];
+    for(var i = 0; i < arr.length; ++i) {
+        if(arr[i] > max) {
+            max = arr[i];
+        }
+    }
+    return max;
+}
+```
 
 未更新完。。。
